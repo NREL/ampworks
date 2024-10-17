@@ -29,11 +29,11 @@ class Fitter:
             ============ ==================================================
             Key          Value (*type*, default)
             ============ ==================================================
-            smoothing    smoothing window for fits (*int*, 15)
+            smoothing    smoothing window for fits (*int*, 3)
             figure_font  fontsize for figure elements (*int*, 10)
             bounds       +/- bounds (*list[float]*, [0.1] * 4)
-            maxiter      maximum fit iterations (*int*, 2e4)
-            xtol         optimization tolerance on x (*float*, 1e-15)
+            maxiter      maximum fit iterations (*int*, 1e5)
+            xtol         optimization tolerance on x (*float*, 1e-9)
             cost_terms   terms in err func (*list[str]*, ['dqdv', 'dvdq'])
             ============ ==================================================
 
@@ -70,11 +70,11 @@ class Fitter:
         if df_cell is not None:
             self.df_cell = df_cell
 
-        self.smoothing = kwargs.pop('smoothing', 15)
+        self.smoothing = kwargs.pop('smoothing', 3)
         self.figure_font = kwargs.pop('figure_font', 10)
         self.bounds = kwargs.pop('bounds', [0.1] * 4)
-        self.maxiter = kwargs.pop('maxiter', 2e4)
-        self.xtol = kwargs.pop('xtol', 1e-15)
+        self.maxiter = kwargs.pop('maxiter', 1e5)
+        self.xtol = kwargs.pop('xtol', 1e-9)
         self.cost_terms = kwargs.pop('cost_terms', ['dqdv', 'dvdq'])
 
         if len(kwargs) != 0:
@@ -219,8 +219,8 @@ class Fitter:
         for v in value:
             if not isinstance(v, (float, int)):
                 raise TypeError("All bounds[i] must be type float.")
-            elif v < 0.01:
-                raise ValueError("All bounds[i] must be >= 0.01.")
+            elif v < 0.001:
+                raise ValueError("All bounds[i] must be >= 0.001.")
             elif v > 1.:
                 raise ValueError("All bounds[i] must be <= 1.")
 
