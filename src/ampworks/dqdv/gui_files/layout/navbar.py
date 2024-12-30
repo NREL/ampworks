@@ -59,7 +59,7 @@ dvq_analysis = dbc.NavLink(
 navlinks = dbc.Nav(
     [
         user_guide,
-        dvq_analysis,        
+        dvq_analysis,
     ],
 )
 
@@ -111,7 +111,7 @@ clientside_callback(
     function themeSwitch(switchOn) {
         document.documentElement.setAttribute(
             "data-bs-theme", switchOn ? "light" : "dark",
-        ); 
+        );
         return window.dash_clientside.no_update;
     }
     """,

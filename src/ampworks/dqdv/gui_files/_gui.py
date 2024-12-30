@@ -13,7 +13,7 @@ here = os.path.dirname(__file__)
 pages_folder = os.path.join(here, 'pages')
 
 dbc_css = 'https://cdn.jsdelivr.net/gh/AnnMarieW/' \
-        + 'dash-bootstrap-templates/dbc.min.css'
+    + 'dash-bootstrap-templates/dbc.min.css'
 
 app = dash.Dash(
     __name__,
@@ -76,17 +76,17 @@ app.layout = html.Div(
 app.clientside_callback(
     """
     function trasformPage(flag, width) {
-       
-        if (width < 1200) {            
-            return [false, false, {}, true, true, "Control Panel"];            
+
+        if (width < 1200) {
+            return [false, false, {}, true, true, "Control Panel"];
         }
-        
+
         sidebarStyle = {
             "top": "4em",
             "position": "fixed",
         };
-                
-        return [false, true, sidebarStyle, false, false, ""];      
+
+        return [false, true, sidebarStyle, false, false, ""];
     }
     """,
     Output('navlinks-collapse', 'is_open', allow_duplicate=True),
@@ -107,10 +107,10 @@ def run(debug: bool = False) -> None:
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
-    
+
     args = parser.parse_args()
-    
+
     run(args.debug)

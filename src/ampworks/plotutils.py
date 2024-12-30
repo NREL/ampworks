@@ -47,7 +47,7 @@ def set_tick_rcparams(allsides: bool = True, minorticks: bool = True,
         plt.rcParams['ytick.minor.visible'] = True
 
     if direction not in ['in', 'out']:
-        raise ValueError(f"{direction = } is not a valid value; supported"
+        raise ValueError(f"{direction=} is not a valid value; supported"
                          + " values are {'in', 'out'}.")
     else:
         plt.rcParams['xtick.direction'] = direction
@@ -82,7 +82,7 @@ def set_font_rcparams(fontsize: int = 10, family: str = 'sans-serif') -> None:
         plt.rcParams['font.family'] = 'sans-serif'
         plt.rcParams['mathtext.fontset'] = 'dejavusans'
     else:
-        raise ValueError(f"{family = } is not a valid value; supported"
+        raise ValueError(f"{family=} is not a valid value; supported"
                          + " values are {'serif', 'sans-serif'}.")
 
 
@@ -174,7 +174,7 @@ def cb_line_plot(ax: object, xdata: list[_ndarray], ydata: list[_ndarray],
         cbticklabels = kwargs.pop('cbticklabels', zdata)
 
     else:
-        raise ValueError(f"{cbtype = } is not a valid value; supported"
+        raise ValueError(f"{cbtype=} is not a valid value; supported"
                          + " values are {'continuous', 'discrete'}.")
 
     sm = mpl.pyplot.cm.ScalarMappable(cmap=cmap, norm=norm)

@@ -17,7 +17,7 @@ dash.register_page(
     page_components=[
         figure_div,
         sliders,
-        optimize_btns, 
+        optimize_btns,
         page_spinner,
         terminal,
         logging_btns,
@@ -30,7 +30,9 @@ dash.register_page(
 # Page layout
 layout = html.Div()
 
-# Callbacks    
+# Callbacks
+
+
 @dash.callback(
     Output('terminal-out', 'children'),
     Input('summary-store', 'data'),
@@ -53,9 +55,10 @@ def update_terminal(summary):
             'niter': None,
             'x_map': ['x0_neg', 'x100_neg', 'x0_pos', 'x100_pos', 'iR'],
         })
-        
+
     return f"```python\n{result!r}\n```"
-    
+
+
 @dash.callback(
     Output('ag-grid', 'rowData'),
     Output('log-toast', 'is_open'),
@@ -69,19 +72,19 @@ def update_terminal(summary):
 def log_new_row(_, current_data, summary, filename):
     if not current_data:
         current_data = []
-        
+
     if not summary:
         return current_data, dash.no_update, dash.no_update
-        
+
     if 'iR' not in summary['x_map']:
         summary['x'] = np.hstack([summary['x'], 0.])
         summary['x_map'].append('iR')
 
     new_row = dict((k, v) for k, v in zip(summary['x_map'], summary['x']))
     new_row['fun'] = summary['fun']
-    
+
     new_row['filename'] = filename.removesuffix('.csv')
-    
+
     current_data.append(new_row)
 
     return current_data, True, filename + ' added to log.'

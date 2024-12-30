@@ -14,8 +14,8 @@ placeholder_fig.update_layout(
 )
 
 placeholder_fig.add_annotation(
-    align='center', showarrow=False, 
-    font=dict(size=20, color='black'), 
+    align='center', showarrow=False,
+    font=dict(size=20, color='black'),
     text='Upload data to populate figure',
     xref='paper', yref='paper', x=0.5, y=0.5,
 )

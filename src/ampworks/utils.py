@@ -1,8 +1,8 @@
 def alphanumeric_sort(unsorted_list: list[str]) -> list[str]:
     import re
 
-    convert = lambda txt: int(txt) if txt.isdigit() else txt
-    alphanum = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    def convert(txt): return int(txt) if txt.isdigit() else txt
+    def alphanum(key): return [convert(c) for c in re.split('([0-9]+)', key)]
 
     sorted_list = sorted(unsorted_list, key=alphanum)
 

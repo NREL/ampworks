@@ -9,7 +9,7 @@ marks.update({i: f"{i:.1f}" for i in np.linspace(0.1, 0.9, 9)})
 
 for k, v in marks.copy().items():
     marks[k] = {'label': v, 'style': {'fontSize': '1em'}}
-    
+
 sliders = dbc.Stack(
     [
         dbc.Label('Negative Electrode: [0.00, 1.00]',
@@ -18,8 +18,8 @@ sliders = dbc.Stack(
             id='neg-slider', updatemode='drag',
             min=0.0, max=1.0, step=0.01, value=[0., 1], marks=marks,
         ),
-        
-        dbc.Label('Positive Electrode: [0.00, 1.00]', 
+
+        dbc.Label('Positive Electrode: [0.00, 1.00]',
                   id='pos-slider-label', class_name='bold-label mt-3'),
         dcc.RangeSlider(
             id='pos-slider', updatemode='drag',
@@ -43,7 +43,7 @@ optimize_btns = dbc.Stack(
             id='min-err-btn',
             class_name='amp-btn',
         ),
-    ], 
+    ],
     gap=3,
     direction='horizontal',
     style={'maxWidth': '900px'},
@@ -88,9 +88,12 @@ log_toast = dbc.Toast(
 download = dcc.Download(id="download-csv")
 logging_btns = dbc.Stack(
     [
-        dbc.Button('Log Output', id='add-row-btn', class_name='log-btn success'),
-        dbc.Button('Delete Selected', id='delete-btn', class_name='log-btn danger'),
-        dbc.Button('Export Data', id='export-btn', class_name='log-btn secondary'),
+        dbc.Button('Log Output', id='add-row-btn',
+                   class_name='log-btn success'),
+        dbc.Button('Delete Selected', id='delete-btn',
+                   class_name='log-btn danger'),
+        dbc.Button('Export Data', id='export-btn',
+                   class_name='log-btn secondary'),
     ],
     gap=3,
     direction='horizontal',

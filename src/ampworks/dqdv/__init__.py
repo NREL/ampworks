@@ -521,7 +521,7 @@ class Fitter:
             upper[-1] = 0.
 
         bounds = [(L, U) for L, U in zip(lower, upper)]
-        
+
         constr_neg = opt.LinearConstraint([[1, -1, 0, 0, 0]], -np.inf, 0.)
         constr_pos = opt.LinearConstraint([[0, 0, 1, -1, 0]], -np.inf, 0.)
         constr_iR = opt.LinearConstraint([[0, 0, 0, 0, 1]], *bounds[-1])
@@ -719,23 +719,23 @@ def post_process(capacity: np.ndarray, x: np.ndarray) -> dict:
     and total inventory losses (TIL). TIL is used instead of LLI (loss of
     lithium inventory) because this analysis is also valid for intercalation
     electrodes with active species other than lithium.
-    
+
     Electrode capacities (Q) and losses of active material (LAM) are
-    
+
     .. math::
-    
+
         Q_{\rm ed} = \frac{\rm capacity}{x_{100, \rm ed} - x_{0, \rm ed}}, \\
         {\rm LAM}_{\rm ed} = 1 - \frac{Q_{\rm ed}}{Q_{\rm ed}[0]},
-        
+
     where :math:`ed` is used generically 'electrode'. In the output, subscripts
     'neg' and 'pos' are used to differentiate between the negative and positive
     electrodes, respectively. Loss of inventory is
-    
+
     .. math::
-    
+
         I = x_{100, \rm neg}Q_{\rm neg} + x_{100, \rm pos}Q_{\rm pos}, \\
-        {\rm TIL} = 1 - \frac{I}{I[0]}, 
-        
+        {\rm TIL} = 1 - \frac{I}{I[0]},
+
     where :math:`I` is an array of inventories calculated from the capacities
     :math:`Q` above. The 'offset' output can also sometimes serve as a helpful
     metric. It is simply the difference between 'x0_neg' and 'x0_pos'.
