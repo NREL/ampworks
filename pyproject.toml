@@ -24,11 +24,16 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
+    "scipy",
     "pandas",
     "openpyxl",
-    "scipy",
     "matplotlib",
-    "pyqt5",
+    "dash",
+    "dash-ag-grid",
+    "dash-extensions",
+    "dash-breakpoints",
+    "dash-bootstrap-templates",
+    "dash-bootstrap-components",
 ]
 
 [project.scripts]
@@ -41,7 +46,7 @@ version = { attr = "ampworks.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.ui"]
+"*" = ["*.ico", ".css"]
 
 [project.optional-dependencies]
 dev = [
@@ -63,7 +68,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://example.com"
-Documentation = "https://example.com"
-Repository = "https://example.com"
-Issues = "https://example.com"
+Homepage = "https://github.com/NREL/ampworks"
+Documentation = "https://github.com/NREL/ampworks"
+Repository = "https://github.com/NREL/ampworks"
+Issues = "https://github.com/NREL/ampworks/issues"

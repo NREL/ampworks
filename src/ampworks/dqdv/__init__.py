@@ -806,6 +806,6 @@ def run_gui() -> None:
 
     """
 
-    from . import _gui
+    from .gui_files import _gui
 
     _gui.run()
