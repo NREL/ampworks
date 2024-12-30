@@ -31,6 +31,9 @@ dependencies = [
     "pyqt5",
 ]
 
+[project.scripts]
+ampworks = "ampworks.cli:main"
+
 [tool.setuptools.dynamic]
 version = { attr = "ampworks.__version__" }
 
