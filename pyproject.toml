@@ -46,7 +46,7 @@ version = { attr = "ampworks.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.ico", ".css"]
+"*" = ["*.ico", "*.css"]
 
 [project.optional-dependencies]
 dev = [
