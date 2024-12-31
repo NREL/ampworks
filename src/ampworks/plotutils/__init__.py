@@ -1,3 +1,9 @@
+"""
+TODO
+----
+
+"""
+
 from numpy import ndarray as _ndarray
 
 
@@ -148,6 +154,28 @@ def add_text(ax: object, xloc: float, yloc: float, text: str) -> None:
 
 def cb_line_plot(ax: object, xdata: list[_ndarray], ydata: list[_ndarray],
                  zdata: _ndarray, cmap: str = 'jet', **kwargs) -> None:
+    """
+    TODO
+
+    Parameters
+    ----------
+    ax : object
+        _description_
+    xdata : list[_ndarray]
+        _description_
+    ydata : list[_ndarray]
+        _description_
+    zdata : _ndarray
+        _description_
+    cmap : str, optional
+        _description_, by default 'jet'
+
+    Raises
+    ------
+    ValueError
+        _description_
+        
+    """
 
     import numpy as np
     import matplotlib as mpl

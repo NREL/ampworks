@@ -5,8 +5,7 @@ ampworks.gitt
 
 .. autoapi-nested-parse::
 
-   GITT
-   ----
+   .. rubric:: TODO
 
 
 

@@ -24,6 +24,9 @@ Submodules
 .. toctree::
    :maxdepth: 1
 
+   /api/ampworks/dqdv/index
    /api/ampworks/gitt/index
+   /api/ampworks/plotutils/index
+   /api/ampworks/utils/index
 
 

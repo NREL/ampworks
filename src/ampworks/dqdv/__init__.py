@@ -1,3 +1,9 @@
+"""
+TODO
+----
+
+"""
+
 import warnings
 
 import numpy as np
@@ -13,7 +19,7 @@ class Fitter:
     def __init__(self, df_neg: pd.DataFrame = None, df_pos: pd.DataFrame = None,
                  df_cell: pd.DataFrame = None, **kwargs) -> None:
         """
-        Wrapper class for differential capacity analysis.
+        Wrapper class for differential analysis.
 
         Parameters
         ----------
@@ -723,18 +729,18 @@ def post_process(capacity: np.ndarray, x: np.ndarray) -> dict:
     Electrode capacities (Q) and losses of active material (LAM) are
 
     .. math::
-
-        Q_{\rm ed} = \frac{\rm capacity}{x_{100, \rm ed} - x_{0, \rm ed}}, \\
-        {\rm LAM}_{\rm ed} = 1 - \frac{Q_{\rm ed}}{Q_{\rm ed}[0]},
+        
+        Q_{ed} = \\frac{\\rm capacity}{x_{100,ed} - x_{0,ed}}, \\quad \\quad
+        {\\rm LAM}_{ed} = 1 - \\frac{Q_{ed}}{Q_{ed}[0]},
 
     where :math:`ed` is used generically 'electrode'. In the output, subscripts
     'neg' and 'pos' are used to differentiate between the negative and positive
     electrodes, respectively. Loss of inventory is
 
     .. math::
-
-        I = x_{100, \rm neg}Q_{\rm neg} + x_{100, \rm pos}Q_{\rm pos}, \\
-        {\rm TIL} = 1 - \frac{I}{I[0]},
+    
+        I = x_{100,neg}Q_{neg} + x_{100,pos}Q_{pos}, \\quad \\quad
+        {\\rm TIL} = 1 - \\frac{I}{I[0]},
 
     where :math:`I` is an array of inventories calculated from the capacities
     :math:`Q` above. The 'offset' output can also sometimes serve as a helpful

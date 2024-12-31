@@ -95,6 +95,7 @@ html_theme_options = {
 
 napoleon_use_rtype = False
 napoleon_custom_sections = [
+    "TODO",
     "Summary",
     "Accessing the documentation",
 ]

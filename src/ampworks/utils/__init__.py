@@ -1,4 +1,24 @@
+"""
+TODO
+----
+
+"""
+
 def alphanumeric_sort(unsorted_list: list[str]) -> list[str]:
+    """
+    TODO
+
+    Parameters
+    ----------
+    unsorted_list : list[str]
+        _description_
+
+    Returns
+    -------
+    list[str]
+        _description_
+        
+    """
     import re
 
     def convert(txt): return int(txt) if txt.isdigit() else txt
@@ -10,13 +30,32 @@ def alphanumeric_sort(unsorted_list: list[str]) -> list[str]:
 
 
 class ProgressBar:
+    """Progress bar"""
 
     __slots__ = ['width']
 
     def __init__(self, width: int = 50) -> None:
+        """
+        TODO
+
+        Parameters
+        ----------
+        width : int, optional
+            _description_, by default 50
+            
+        """
         self.width = width
 
     def update(self, percent) -> None:
+        """
+        TODO
+
+        Parameters
+        ----------
+        percent : _type_
+            _description_
+            
+        """
         import sys
 
         done = int(percent * self.width)

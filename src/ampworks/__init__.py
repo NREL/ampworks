@@ -12,12 +12,6 @@ includes search functionality and more detailed examples.
 
 """
 
-# Subpackages
-from . import dqdv
-from . import gitt
-from . import plotutils
-from . import utils
-
 __version__ = '0.0.1'
 
 __all__ = [
@@ -26,3 +20,22 @@ __all__ = [
     'plotutils',
     'utils',
 ]
+
+def __getattr__(attr):
+    
+    if attr == 'dqdv':
+        import ampworks.dqdv as dqdv
+        return dqdv
+    elif attr == 'gitt':
+        import ampworks.gitt as gitt
+        return gitt
+    elif attr == 'plotutils':
+        import ampworks.plotutils as plotutils
+        return plotutils
+    elif attr == 'utils':
+        import ampworks.utils as utils
+        return utils
+    
+def __dir__():
+    public_symbols = (globals().keys() | __all__)
+    return list(public_symbols)
