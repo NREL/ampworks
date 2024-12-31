@@ -1,6 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 import numpy as np
+
+if TYPE_CHECKING:  # pragma: no cover
+    import numpy.typing as npt
 
 @dataclass(slots=True, eq=False)
 class CellDescription:
@@ -73,18 +79,18 @@ class CellDescription:
 class GITTDataset:
     """GITT dataclass wrapper"""
     
-    def __init__(self, time: np.ndarray, current: np.ndarray,
-                 voltage: np.ndarray, avg_temperature: float,
+    def __init__(self, time: npt.ArrayLike, current: npt.ArrayLike,
+                 voltage: npt.ArrayLike, avg_temperature: float,
                  invert_current: bool = False) -> None:
         """
 
         Parameters
         ----------
-        time : 1D np.array
+        time : ArrayLike, shape(n,)
             Recorded test times [s].
-        current : 1D np.array
+        current : ArrayLike, shape(n,)
             Timeseries current data [A].
-        voltage : 1D np.array
+        voltage : ArrayLike, shape(n,)
             Timeseries voltage data [V].
         avg_temperature : float
             Average temperature of the experiment [K].
@@ -102,6 +108,10 @@ class GITTDataset:
             'time' array must be increasing.
             
         """
+        
+        time = np.asarray(time)
+        current = np.asarray(current)
+        voltage = np.asarray(voltage)
         
         if not all(np.diff(time) >= 0.):
             raise ValueError("'time' array must be increasing.")
