@@ -8,13 +8,22 @@ build-backend = "setuptools.build_meta"
 name = "ampworks"
 readme = "README.md"
 dynamic = ["version"]
-requires-python = ">=3.9,<3.14"
-license = { file = "LICENSE.txt" }
 description = "Processing and visualization tools for battery experiments."
-authors = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
-maintainers = [{ name = "Corey R. Randall", email = "corey.randall@nrel.gov" }]
+keywords = ["battery", "analysis", "data", "ICA", "dQdV", "GITT"]
+requires-python = ">=3.9,<3.14"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Corey R. Randall" },
+    { email = "corey.randall@nrel.gov" },
+]
+maintainers = [
+    { name = "Corey R. Randall" },
+    { email = "corey.randall@nrel.gov" },
+]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -24,16 +33,10 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "scipy",
+    "scipy >= 1.13",
     "pandas",
     "openpyxl",
     "matplotlib",
-    "dash",
-    "dash-ag-grid",
-    "dash-extensions",
-    "dash-breakpoints",
-    "dash-bootstrap-templates",
-    "dash-bootstrap-components",
 ]
 
 [project.scripts]
@@ -49,22 +52,34 @@ where = ["src"]
 "*" = ["*.ico", "*.css"]
 
 [project.optional-dependencies]
-dev = [
-    "nox",
+gui = [
+    "dash",
+    "dash-ag-grid",
+    "dash-extensions",
+    "dash-breakpoints",
+    "dash-bootstrap-templates",
+    "dash-bootstrap-components",
+]
+docs = [
+    "sphinx",
+    "myst-nb",
+    "numpydoc",
+    "sphinx-design",
+    "sphinx-autoapi",
+    "sphinx-copybutton",
+    "pydata-sphinx-theme",
+]
+tests = [
     "pytest",
     "pytest-cov",
     "pytest-xdist",
-    "genbadge[all]",
-    "codespell",
+]
+dev = [
+    "nox",
     "flake8",
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-design",
-    "sphinx-favicon",
-    "sphinx-copybutton",
-    "myst-nb",
-    "numpydoc",
-    "pydata-sphinx-theme",
+    "codespell",
+    "genbadge[all]",
+    "ampworks[gui,docs,tests]",
 ]
 
 [project.urls]

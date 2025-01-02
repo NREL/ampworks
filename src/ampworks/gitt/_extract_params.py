@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
+from scipy.integrate import trapezoid
 from scipy.interpolate import Akima1DInterpolator
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -87,7 +88,7 @@ def extract_params(flag: int, cell: CellDescription, data: GITTDataset,
     xs[0] = 1.
 
     for i in range(xs.size - 1):
-        delta_capacity = np.trapezoid(
+        delta_capacity = trapezoid(
             x=time[start[i]:stop[i] + 1] / 3600.,
             y=current[start[i]:stop[i] + 1] / cell.mass_AM,
         )
