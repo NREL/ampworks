@@ -90,8 +90,8 @@ Package Contents
       Run a trust-constrained local optimization routine to minimize error
       between the fit and data.
 
-      :param x0: Initial x0_neg, x100_neg, x0_pos, x100_pos, iR (optional) values.
-      :type x0: 1D np.array
+      :param x0: Initial x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
+      :type x0: ArrayLike, shape(n,)
 
       :returns: **summary** (*dict*) -- Summarized results from the optimization routine.
 
@@ -101,8 +101,8 @@ Package Contents
 
       The cost function for coarse_search and constrained_fit.
 
-      :param params: Array for x0_neg, x100_neg, x0_pos, x100_pos, and iR (optional).
-      :type params: 1D np.array
+      :param params: Array for x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
+      :type params: ArrayLike, shape(n,)
 
       :returns: **err_tot** (*float*) -- Total error based on a combination of cost_terms.
 
@@ -113,7 +113,7 @@ Package Contents
       Calculate error between the fit and data.
 
       :param params: Array for x0_neg, x100_neg, x0_pos, x100_pos, and iR (optional).
-      :type params: 1D np.array
+      :type params: ArrayLike, shape(n,)
       :param full_output: Flag to return all data. The default is False.
       :type full_output: bool, optional
 
@@ -152,8 +152,8 @@ Package Contents
 
       Plot the fit vs. data.
 
-      :param params: Parameter array x0_neg, x100_neg, x0_pos, x100_pos, iR (optional).
-      :type params: 1D np.array
+      :param params: Parameters x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
+      :type params: ArrayLike, shape(n,)
       :param \*\*kwargs: Keyword arguments. Optional key/value pairs are below:
 
                          ============== ============================================
@@ -297,10 +297,10 @@ Package Contents
    metric. It is simply the difference between 'x0_neg' and 'x0_pos'.
 
    :param capacity: Full cell capacity values per fitted profile.
-   :type capacity: 1D np.array
+   :type capacity: ArrayLike, shape(n,)
    :param x: Fitted x0/x100 values. Row i corresponds to capacity[i], with column
              order: x0_neg, x100_neg, x0_pos, x100_pos.
-   :type x: 2D np.array
+   :type x: ArrayLike, shape(n,4)
 
    :raises ValueError: capacity.size != x.shape[0].
    :raises ValueError: x.shape[1] != 4.

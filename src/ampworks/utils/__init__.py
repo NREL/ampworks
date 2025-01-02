@@ -4,6 +4,7 @@ TODO
 
 """
 
+
 def alphanumeric_sort(unsorted_list: list[str]) -> list[str]:
     """
     TODO
@@ -17,7 +18,7 @@ def alphanumeric_sort(unsorted_list: list[str]) -> list[str]:
     -------
     list[str]
         _description_
-        
+
     """
     import re
 
@@ -42,7 +43,7 @@ class ProgressBar:
         ----------
         width : int, optional
             _description_, by default 50
-            
+
         """
         self.width = width
 
@@ -54,7 +55,7 @@ class ProgressBar:
         ----------
         percent : _type_
             _description_
-            
+
         """
         import sys
 

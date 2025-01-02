@@ -33,47 +33,54 @@ Package Contents
 
    Cell description wrapper
 
-   :param thick: Electrode thickness [m].
-   :type thick: float
-   :param area: Cell area (e.g., pi*R**2 for coin cells) [m2].
-   :type area: float
+   :param thick_ed: Electrode thickness [m].
+   :type thick_ed: float
+   :param area_ed: Projected electrode area (e.g., pi*R**2 for coin cells, L*W for pouch
+                   cells, etc.) [m2].
+   :type area_ed: float
    :param eps_el: Electrolyte/pore volume fraction [-].
    :type eps_el: float
    :param eps_CBD: Carbon-binder-domain volume fraction [-]. See notes for more info.
    :type eps_CBD: float
-   :param Rp_AM: Active material particle radius [m].
-   :type Rp_AM: float
+   :param radius_AM: Active material particle radius [m].
+   :type radius_AM: float
    :param rho_AM: Active material mass density [kg/m3].
    :type rho_AM: float
    :param mass_AM: Total active material mass [kg].
    :type mass_AM: float
-   :param MW_AM: Active material molecular weight [kg/kmol].
-   :type MW_AM: float
+   :param molar_mass_AM: Active material molar mass [kg/kmol].
+   :type molar_mass_AM: float
 
    :returns: *None.*
 
    .. rubric:: Notes
 
+   A "convenient" way to get ``eps_CBD`` requires knowledge of the densities
+   and masses for all solid phases in your slurry (carbon additive, binder,
+   and active material). The volume fraction for any phase :math:`m` is
 
-   .. py:property:: As_AM
-      :type: float
+   .. math::
 
+       \varepsilon_{m} = f_{m} \varepsilon_{\rm s},
 
-      Total active material surface area [m2].
+   where :math:`f_{m}` is the volume of phase :math:`m` per volume of solid
+   phase and :math:`\varepsilon_{\rm s} = 1 - \varepsilon_{\rm el}` is
+   the total solid-phase volume fraction. :math:`f_{m}` is calculated as
 
+   .. math::
 
-   .. py:property:: Vm_AM
-      :type: float
+       f_{m} = \frac{m_{m} / \rho_{m}}{\sum_{i=1}^{N} m_{i} / \rho_{i}},
 
+   Here, the numerator uses the mass and density of phase :math:`m` to get
+   its individual volume, and the denominator sums over all :math:`N` solid
+   phases to calculate the total solid-phase volume. Using these expressions,
+   you can separately calculate volume fractions for the carbon additive and
+   binder. Finally, adding their values together gives
 
-      Electrode volume [m3].
+   .. math::
 
-
-   .. py:property:: capacity
-      :type: float
-
-
-      Electrode volume [m3].
+       \varepsilon_{\rm CBD} = \varepsilon_{\rm C}
+                               + \varepsilon_{\rm B}.
 
 
    .. py:property:: eps_AM
@@ -83,7 +90,28 @@ Package Contents
       Active material volume fraction [-].
 
 
-   .. py:property:: volume
+   .. py:property:: molar_vol_AM
+      :type: float
+
+
+      Active material molar volume [m3/kmol].
+
+
+   .. py:property:: spec_capacity_AM
+      :type: float
+
+
+      Theoretical specific capacity [Ah/kg].
+
+
+   .. py:property:: surf_area_AM
+      :type: float
+
+
+      Total active material surface area [m2].
+
+
+   .. py:property:: volume_ed
       :type: float
 
 
@@ -95,11 +123,11 @@ Package Contents
    GITT dataclass wrapper
 
    :param time: Recorded test times [s].
-   :type time: 1D np.array
+   :type time: ArrayLike, shape(n,)
    :param current: Timeseries current data [A].
-   :type current: 1D np.array
+   :type current: ArrayLike, shape(n,)
    :param voltage: Timeseries voltage data [V].
-   :type voltage: 1D np.array
+   :type voltage: ArrayLike, shape(n,)
    :param avg_temperature: Average temperature of the experiment [K].
    :type avg_temperature: float
    :param invert_current: Inverts signs for 'current' values. Charge/discharge currents

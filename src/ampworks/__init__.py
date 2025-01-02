@@ -21,8 +21,9 @@ __all__ = [
     'utils',
 ]
 
+
 def __getattr__(attr):
-    
+
     if attr == 'dqdv':
         import ampworks.dqdv as dqdv
         return dqdv
@@ -35,7 +36,8 @@ def __getattr__(attr):
     elif attr == 'utils':
         import ampworks.utils as utils
         return utils
-    
+
+
 def __dir__():
     public_symbols = (globals().keys() | __all__)
     return list(public_symbols)

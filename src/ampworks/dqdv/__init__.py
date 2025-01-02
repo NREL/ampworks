@@ -372,7 +372,7 @@ class Fitter:
         function includes more than one term.
 
         """
-        
+
         params = np.asarray(params)
 
         if params.size == 5:
@@ -509,7 +509,7 @@ class Fitter:
             Summarized results from the optimization routine.
 
         """
-        
+
         x0 = np.asarray(x0)
 
         output = self.err_terms(x0, full_output=True)
@@ -737,7 +737,7 @@ def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
     Electrode capacities (Q) and losses of active material (LAM) are
 
     .. math::
-        
+
         Q_{ed} = \\frac{\\rm capacity}{x_{100,ed} - x_{0,ed}}, \\quad \\quad
         {\\rm LAM}_{ed} = 1 - \\frac{Q_{ed}}{Q_{ed}[0]},
 
@@ -746,7 +746,7 @@ def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
     electrodes, respectively. Loss of inventory is
 
     .. math::
-    
+
         I = x_{100,neg}Q_{neg} + x_{100,pos}Q_{pos}, \\quad \\quad
         {\\rm TIL} = 1 - \\frac{I}{I[0]},
 
@@ -778,7 +778,7 @@ def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
         other outputs are unitless.
 
     """
-    
+
     x = np.asarray(x)
     capacity = np.asarray(capacity)
 

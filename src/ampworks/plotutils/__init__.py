@@ -174,7 +174,7 @@ def cb_line_plot(ax: object, xdata: list[_ndarray], ydata: list[_ndarray],
     ------
     ValueError
         _description_
-        
+
     """
 
     import numpy as np
