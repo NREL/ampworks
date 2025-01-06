@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 if TYPE_CHECKING:  # pragma: no cover
     import numpy.typing as npt
@@ -13,6 +14,10 @@ if TYPE_CHECKING:  # pragma: no cover
 class CellDescription:
     """
     Cell description wrapper
+    
+    A dataclass to describe the cell. Requires cell geometry, microstructure,
+    and material properties information. Make sure parameters are input with
+    the correct units, as described in the documentation.
 
     Parameters
     ----------
@@ -85,7 +90,7 @@ class CellDescription:
 
     @property
     def spec_capacity_AM(self) -> float:
-        """Theoretical specific capacity [Ah/kg]."""
+        """Active material theoretical specific capacity [Ah/kg]."""
         return 96485.33e3 / (3600.*self.molar_mass_AM)
 
     @property
@@ -111,6 +116,7 @@ class GITTDataset:
                  voltage: npt.ArrayLike, avg_temperature: float,
                  invert_current: bool = False) -> None:
         """
+        A dataclass to wrap experimental GITT data.
 
         Parameters
         ----------
@@ -123,8 +129,8 @@ class GITTDataset:
         avg_temperature : float
             Average temperature of the experiment [K].
         invert_current : bool, optional
-            Inverts signs for 'current' values. Charge/discharge currents
-            should be positive/negative, respectively. The default is False.
+            Inverts the 'current' sign values. Charge and discharge currents
+            should be positive and negative, respectively. Defaults to False.
 
         Returns
         -------
@@ -147,3 +153,113 @@ class GITTDataset:
 
         if invert_current:
             self.current *= -1.
+            
+    def find_pulses(self, pulse_sign: int, plot: bool = False) -> tuple[int]:
+        """
+        Finds the indices in the data where pulses start and end. The algorithm
+        depends on there being a rest period both before and after each pulse.
+
+        Parameters
+        ----------
+        pulse_sign : int
+            The sign of the current pulses to find. Use `+1` or `-1` for
+            positive and negative pulses, respectively.
+        plot : bool, optional
+            Whether or not to plot the result. The default is False.
+
+        Returns
+        -------
+        start : int
+            Indices where pulse starts were detected.
+        stop : int 
+            Indices where pulse stops were detected.
+
+        Raises
+        ------
+        ValueError
+            Invalid pulse_sign value, must be +1 or -1.
+        ValueError
+            Size mismatch: The number of detected pulse starts and stops do
+            not agree. This typically occurs due to a missing rest. You will
+            likely need to manually remove affected pulse(s).
+            
+        """
+        
+        I_pulse = self._avg_pulse_current(pulse_sign)
+        
+        if pulse_sign == 1:
+            I_tmp = np.where(self.current > 0.5*I_pulse, 1, 0)
+        elif pulse_sign == -1:
+            I_tmp = np.where(self.current < 0.5*I_pulse, 1, 0)
+        
+        idx1 = np.where(np.diff(I_tmp) > 0.9)[0]
+        idx2 = np.where(I_tmp > -0.9)[0]
+        start = np.intersect1d(idx1, idx2)
+
+        idx1 = np.where(I_tmp > 0.9)[0]
+        idx2 = np.where(np.diff(I_tmp) < -0.9)
+        stop = np.intersect1d(idx1, idx2)
+        
+        if plot:
+            plt.figure()
+            plt.plot(self.time / 3600., 1e3*self.current, '-k')
+            plt.plot(self.time[start] / 3600., 1e3*self.current[start], 'sg')
+            plt.plot(self.time[stop] / 3600., 1e3*self.current[stop], 'or')
+            
+            plt.xlabel('Time [h]')
+            plt.ylabel('Current [mA]')
+            
+            plt.show()
+            
+        return start, stop
+    
+    def get_stats(self, pulse_sign: int) -> dict:
+        
+        time = self.time.copy()
+        I_pulse = self._avg_pulse_current(pulse_sign)
+        start, stop = self.find_pulses(pulse_sign, plot=False)
+        
+        stats = {
+            'num pulses': start.size,
+            'avg I_pulse [A]': I_pulse,
+            'avg t_pulse [s]': np.mean(time[stop] - time[start]),
+            'avg t_rest [s]': np.mean(time[start[1:]] - time[stop[:-1]]),
+        }
+        
+        return stats
+
+    def plot(self, y_key: str, t_units: str = 'h') -> None:
+        
+        plt.figure()
+        if y_key == 'current':
+            y, ylabel = self.current.copy(), 'Current [A]'
+        elif y_key == 'voltage':
+            y, ylabel = self.voltage.copy(), 'Voltage [V]'
+        else:
+            raise ValueError()
+        
+        converter = {
+            's': lambda t: t,
+            'min': lambda t: t / 60.,
+            'h': lambda t: t / 3600.,
+            'day': lambda t: t / 3600. / 24.,
+        }
+        
+        x, xlabel = converter[t_units](self.time), f"Time [{t_units}]"
+        
+        plt.plot(x, y)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+
+        plt.show()
+        
+    def _avg_pulse_current(self, pulse_sign: int) -> float:
+        
+        if pulse_sign == 1:
+            I_pulse = np.mean(self.current[self.current > 0.])
+        elif pulse_sign == -1:
+            I_pulse = np.mean(self.current[self.current < 0.])
+        else:
+            raise ValueError(f"Invalid {pulse_sign=}, must be +1 or -1.")
+        
+        return I_pulse

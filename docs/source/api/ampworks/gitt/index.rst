@@ -86,13 +86,11 @@ Package Contents
    .. py:property:: eps_AM
       :type: float
 
-
       Active material volume fraction [-].
 
 
    .. py:property:: molar_vol_AM
       :type: float
-
 
       Active material molar volume [m3/kmol].
 
@@ -100,20 +98,17 @@ Package Contents
    .. py:property:: spec_capacity_AM
       :type: float
 
-
       Theoretical specific capacity [Ah/kg].
 
 
    .. py:property:: surf_area_AM
       :type: float
 
-
       Total active material surface area [m2].
 
 
    .. py:property:: volume_ed
       :type: float
-
 
       Electrode volume [m3].
 
@@ -130,8 +125,8 @@ Package Contents
    :type voltage: ArrayLike, shape(n,)
    :param avg_temperature: Average temperature of the experiment [K].
    :type avg_temperature: float
-   :param invert_current: Inverts signs for 'current' values. Charge/discharge currents
-                          should be positive/negative, respectively. The default is False.
+   :param invert_current: Inverts the 'current' sign values. Charge and discharge currents
+                          should be positive and negative, respectively. Defaults to False.
    :type invert_current: bool, optional
 
    :returns: *None.*
@@ -139,21 +134,58 @@ Package Contents
    :raises ValueError: 'time' array must be increasing.
 
 
-.. py:function:: extract_params(flag, cell, data, return_stats = False, **options)
+   .. py:method:: find_pulses(pulse_sign, plot = False)
+
+      Finds the indices in the data where pulses start and end. The algorithm
+      depends on there being a rest period both before and after each pulse.
+
+      :param pulse_sign: The sign of the current pulses to find. Use `+1` or `-1` for
+                         positive and negative pulses, respectively.
+      :type pulse_sign: int
+      :param plot: Whether or not to plot the result. The default is False.
+      :type plot: bool, optional
+
+      :returns: * **start** (*int*) -- Indices where pulse starts were detected.
+                * **stop** (*int*) -- Indices where pulse stops were detected.
+
+      :raises ValueError: Size mismatch: The number of detected pulse starts and stops do
+          not agree. This typically occurs due to a missing rest. You will
+          likely need to manually remove affected pulse(s).
+
+
+
+.. py:function:: extract_params(pulse_sign, cell, data, return_stats = False, **options)
 
    _summary_
 
-   :param flag: _description_
-   :type flag: int
-   :param cell: _description_
+   :param pulse_sign: The sign of the current pulses to process. Use `+1` for positive pulses
+                      and `-1` for negative pulses.
+   :type pulse_sign: int
+   :param cell: Description of the cell.
    :type cell: CellDescription
-   :param data: _description_
+   :param data: The GITT data to process.
    :type data: GITTDataset
-   :param return_stats: _description_, by default False
+   :param return_stats: Adds a second return value with some statistics from the experiment,
+                        see below. The default is False.
    :type return_stats: bool, optional
+   :param \*\*options: Keyword options to further control the function behavior. A full list
+                       of names, types, descriptions, and defaults is given below.
+   :type \*\*options: dict, optional
+   :param R2_lim: Lower limit for the coefficient of determination. Pulses whose linear
+                  regression for `sqrt(time)` vs `voltage` that are less than this value
+                  result in a diffusivity of `nan`. The default is 0.95.
+   :type R2_lim: float, optional
+   :param replace_nans: If True (default) this uses interpolation to replace `nan` diffusivity
+                        values. When False, `nan` values will persist into the output.
+   :type replace_nans: bool, optional
 
-   :returns: *pd.DataFrame* -- _description_
+   :returns: * **params** (*dict*) -- A dictionary of the extracted parameters from each pulse. The keys are
+               `xs [-]` for the intercalation fractions, `Ds [m2/s]` for diffusivity,
+               `i0 [A/m2]` for exchange current density, and `OCV [V]` for the OCV.
+             * **stats** (*dict*) -- Only returned when 'return_stats' is True. Provides key/value pairs for
+               the number of pulses, average pulse current, and average rest and pulse
+               times.
 
-   :raises ValueError: _description_
+   :raises ValueError: 'options' contains invalid key/value pairs.
 
 
