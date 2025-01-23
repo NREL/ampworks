@@ -1,4 +1,5 @@
 import os
+import webbrowser
 
 import dash
 import dash_bootstrap_components as dbc
@@ -102,15 +103,11 @@ app.clientside_callback(
 
 
 def run(debug: bool = False) -> None:
-    app.run(debug=debug)
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-
-    args = parser.parse_args()
-
-    run(args.debug)
+    
+    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        webbrowser.open_new("http://127.0.0.1:8050/")
+    
+    app.run(
+        debug=debug,
+        dev_tools_silence_routes_logging=True,
+    )
