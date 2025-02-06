@@ -32,11 +32,15 @@ y_labels = ['Voltage [V]', 'dsoc/dV [1/V]', 'dV/dsoc [V]']
 for i in range(3):
     figure.update_xaxes(
         row=1, col=i+1,
-        mirror=True, title_text='SOC [-]',
+        ticks='inside', tickcolor='#212529',
+        mirror='allticks', title_text='SOC [-]',
+        showline=True, linewidth=1, linecolor='#212529',
     )
     figure.update_yaxes(
         row=1, col=i+1,
-        mirror=True, title_text=y_labels[i],
+        ticks='inside', tickcolor='#212529', 
+        mirror='allticks', title_text=y_labels[i],
+        showline=True, linewidth=1, linecolor='#212529',
     )
 
 figure_div = dcc.Graph(
@@ -45,7 +49,7 @@ figure_div = dcc.Graph(
     figure=placeholder_fig,
     style={'height': '370px', 'width': '100%'},
     config={
-        'scrollZoom': False,
+        'scrollZoom': True,
         'displaylogo': False,
         'modeBarButtonsToRemove': ['lasso2d', 'select2d'],
     },

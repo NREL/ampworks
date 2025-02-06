@@ -485,11 +485,12 @@ class Fitter:
 
         index = np.argmin(errs)
 
-        summary = {'nfev': len(errs),
-                   'fun': errs[index],
-                   'x': np.array(list(valid_ps[index].values())),
-                   'x_map': list(valid_ps[index].keys())
-                   }
+        summary = {
+            'nfev': len(errs),
+            'fun': errs[index],
+            'x': np.array(list(valid_ps[index].values())),
+            'x_map': list(valid_ps[index].keys()),
+        }
 
         return summary
 

@@ -18,8 +18,8 @@ ampworks
 
 
 
-Subpackages
------------
+Submodules
+----------
 
 .. toctree::
    :maxdepth: 1

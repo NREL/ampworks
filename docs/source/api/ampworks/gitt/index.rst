@@ -33,6 +33,10 @@ Package Contents
 
    Cell description wrapper
 
+   A dataclass to describe the cell. Requires cell geometry, microstructure,
+   and material properties information. Make sure parameters are input with
+   the correct units, as described in the documentation.
+
    :param thick_ed: Electrode thickness [m].
    :type thick_ed: float
    :param area_ed: Projected electrode area (e.g., pi*R**2 for coin cells, L*W for pouch
@@ -86,11 +90,13 @@ Package Contents
    .. py:property:: eps_AM
       :type: float
 
+
       Active material volume fraction [-].
 
 
    .. py:property:: molar_vol_AM
       :type: float
+
 
       Active material molar volume [m3/kmol].
 
@@ -98,11 +104,13 @@ Package Contents
    .. py:property:: spec_capacity_AM
       :type: float
 
-      Theoretical specific capacity [Ah/kg].
+
+      Active material theoretical specific capacity [Ah/kg].
 
 
    .. py:property:: surf_area_AM
       :type: float
+
 
       Total active material surface area [m2].
 
@@ -110,12 +118,15 @@ Package Contents
    .. py:property:: volume_ed
       :type: float
 
+
       Electrode volume [m3].
 
 
 .. py:class:: GITTDataset(time, current, voltage, avg_temperature, invert_current = False)
 
    GITT dataclass wrapper
+
+   A dataclass to wrap experimental GITT data.
 
    :param time: Recorded test times [s].
    :type time: ArrayLike, shape(n,)
@@ -148,6 +159,7 @@ Package Contents
       :returns: * **start** (*int*) -- Indices where pulse starts were detected.
                 * **stop** (*int*) -- Indices where pulse stops were detected.
 
+      :raises ValueError: Invalid pulse_sign value, must be +1 or -1.
       :raises ValueError: Size mismatch: The number of detected pulse starts and stops do
           not agree. This typically occurs due to a missing rest. You will
           likely need to manually remove affected pulse(s).
@@ -171,6 +183,12 @@ Package Contents
    :param \*\*options: Keyword options to further control the function behavior. A full list
                        of names, types, descriptions, and defaults is given below.
    :type \*\*options: dict, optional
+   :param xs_ref: Shifts the intercalation fraction output value such that the lower or
+                  upper bound (set via `ref_location`) is `xs_ref`. The default is 1.
+   :type xs_ref: float, optional
+   :param ref_location: Specifies whether the `xs_ref` value is used as a lower or upper bound.
+                        The default is 'upper'.
+   :type ref_location: {'lower', 'upper'}, optional
    :param R2_lim: Lower limit for the coefficient of determination. Pulses whose linear
                   regression for `sqrt(time)` vs `voltage` that are less than this value
                   result in a diffusivity of `nan`. The default is 0.95.

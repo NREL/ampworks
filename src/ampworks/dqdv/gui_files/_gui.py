@@ -14,7 +14,7 @@ here = os.path.dirname(__file__)
 pages_folder = os.path.join(here, 'pages')
 
 dbc_css = 'https://cdn.jsdelivr.net/gh/AnnMarieW/' \
-    + 'dash-bootstrap-templates/dbc.min.css'
+        + 'dash-bootstrap-templates/dbc.min.css'
 
 app = dash.Dash(
     __name__,

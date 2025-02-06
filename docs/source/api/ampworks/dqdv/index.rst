@@ -173,11 +173,13 @@ Package Contents
    .. py:property:: bounds
       :type: list[float]
 
+
       Get or set the bounds for the constrained fit routine.
 
 
    .. py:property:: cost_terms
       :type: list[str]
+
 
       Get or set which terms are included in the constrained fit's cost
       function. Options are 'voltage', 'dqdv', and/or 'dvdq'.
@@ -185,6 +187,7 @@ Package Contents
 
    .. py:property:: df_cell
       :type: pandas.DataFrame
+
 
       Get or set the full cell dataframe.
 
@@ -196,6 +199,7 @@ Package Contents
    .. py:property:: df_neg
       :type: pandas.DataFrame
 
+
       Get or set the negative electrode dataframe.
 
       Columns must include both 'soc' for state of charge and 'voltage' for
@@ -204,6 +208,7 @@ Package Contents
 
    .. py:property:: df_pos
       :type: pandas.DataFrame
+
 
       Get or set the positive electrode dataframe.
 
@@ -214,17 +219,20 @@ Package Contents
    .. py:property:: figure_font
       :type: int
 
+
       Get or set the figure fontsize.
 
 
    .. py:property:: maxiter
       :type: int
 
+
       Get or set the maximum iterations for the constrained fit routine.
 
 
    .. py:property:: smoothing
       :type: int
+
 
       Get or set the fit smoothing.
 
@@ -236,6 +244,7 @@ Package Contents
 
    .. py:property:: xtol
       :type: float
+
 
       Get or set the 'x' tolerance for the constrained fit routine.
 
