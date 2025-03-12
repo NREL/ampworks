@@ -36,7 +36,10 @@ TODO
 **Useful links:** 
 `anaconda <https://www.anaconda.com/download>`_ |
 `spyder <https://www.spyder-ide.org/>`_ |
+`notebooks <https://jupyter.org/>`_ |
 `numpy <https://numpy.org/doc/stable/>`_  |  
+`scipy <https://scipy.org/>`_ |
+`pandas <https://pandas.pydata.org/>`_ |
 `matplotlib <https://matplotlib.org/stable/users/>`_
 
 .. grid:: 1 2 2 2
