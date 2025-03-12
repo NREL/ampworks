@@ -127,6 +127,6 @@ if __name__ == '__main__':
     else:
         prefix = None
 
-    pypi = '0.0.0'  # get_latest_version('ampworks', prefix)
+    pypi = get_latest_version('ampworks', prefix)
 
     check_against_pypi(pypi, args.local)
