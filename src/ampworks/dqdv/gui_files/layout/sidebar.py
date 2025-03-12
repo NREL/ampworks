@@ -417,6 +417,8 @@ dash.clientside_callback(
 )
 
 # Support functions
+
+
 def make_figure(params, flags, new_data=False):
 
     if new_data and all(flags.values()):
@@ -624,7 +626,7 @@ def toggle_theme_switch(switch_on, flags):
         template = pio.templates['bootstrap_dark']
 
     figure.update_layout(template=template)
-    
+
     for i in range(3):
         figure.update_xaxes(
             row=1, col=i+1,

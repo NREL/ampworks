@@ -38,7 +38,7 @@ for i in range(3):
     )
     figure.update_yaxes(
         row=1, col=i+1,
-        ticks='inside', tickcolor='#212529', 
+        ticks='inside', tickcolor='#212529',
         mirror='allticks', title_text=y_labels[i],
         showline=True, linewidth=1, linecolor='#212529',
     )

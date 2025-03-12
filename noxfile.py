@@ -1,9 +1,10 @@
-# noxfile.py
-
 import os
 import shutil
+import importlib
 
 import nox
+
+nox.options.sessions = []
 
 
 @nox.session(name='cleanup', python=False)
@@ -28,6 +29,9 @@ def run_flake8(session):
 
     """
 
+    session.run('pip', 'install', '--upgrade', '--quiet', 'flake8')
+    session.run('pip', 'install', '--upgrade', '--quiet', 'autopep8')
+
     if 'format' in session.posargs:
         session.run('autopep8', '.', '--in-place', '--recursive',
                     '--global-config=.github/linters/.flake8')
@@ -45,8 +49,9 @@ def run_codespell(session):
 
     """
 
-    command = ['codespell', '--config=.github/linters/.codespellrc']
+    session.run('pip', 'install', '--upgrade', '--quiet', 'codespell')
 
+    command = ['codespell', '--config=.github/linters/.codespellrc']
     if 'write' in session.posargs:
         command.insert(1, '-w')
 
@@ -84,14 +89,24 @@ def run_pytest(session):
 
     """
 
-    command = [
-        'pytest',
-        '--cov=src/ampworks',
-        '--cov-report=html:reports/htmlcov',
-        '--cov-report=xml:reports/coverage.xml',
-        '--junitxml=reports/junit.xml',
-        'tests/',
-    ]
+    package = importlib.util.find_spec('ampworks')
+    coverage_folder = os.path.dirname(package.origin)
+
+    if 'no-reports' in session.posargs:
+        command = [
+            'pytest',
+            f'--cov={coverage_folder}',  # for editable or site-packages
+            'tests/',
+        ]
+    else:
+        command = [
+            'pytest',
+            '--cov=src/ampworks',
+            '--cov-report=html:reports/htmlcov',
+            '--cov-report=xml:reports/coverage.xml',
+            '--junitxml=reports/junit.xml',
+            'tests/',
+        ]
 
     for arg in session.posargs:
         if arg.startswith('parallel='):
@@ -139,6 +154,9 @@ def run_sphinx(session):
 
         if os.path.exists('source/api'):
             shutil.rmtree('source/api')
+
+        if os.path.exists('jupyter_execute'):
+            shutil.rmtree('jupyter_execute')
 
         os.chdir('..')
 

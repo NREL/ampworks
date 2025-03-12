@@ -14,7 +14,7 @@ here = os.path.dirname(__file__)
 pages_folder = os.path.join(here, 'pages')
 
 dbc_css = 'https://cdn.jsdelivr.net/gh/AnnMarieW/' \
-        + 'dash-bootstrap-templates/dbc.min.css'
+    + 'dash-bootstrap-templates/dbc.min.css'
 
 app = dash.Dash(
     __name__,
@@ -103,10 +103,10 @@ app.clientside_callback(
 
 
 def run(debug: bool = False) -> None:
-    
+
     if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         webbrowser.open_new("http://127.0.0.1:8050/")
-    
+
     app.run(
         debug=debug,
         dev_tools_silence_routes_logging=True,

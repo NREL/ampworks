@@ -14,7 +14,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class CellDescription:
     """
     Cell description wrapper
-    
+
     A dataclass to describe the cell. Requires cell geometry, microstructure,
     and material properties information. Make sure parameters are input with
     the correct units, as described in the documentation.
@@ -153,7 +153,7 @@ class GITTDataset:
 
         if invert_current:
             self.current *= -1.
-            
+
     def find_pulses(self, pulse_sign: int, plot: bool = False) -> tuple[int]:
         """
         Finds the indices in the data where pulses start and end. The algorithm
@@ -171,7 +171,7 @@ class GITTDataset:
         -------
         start : int
             Indices where pulse starts were detected.
-        stop : int 
+        stop : int
             Indices where pulse stops were detected.
 
         Raises
@@ -182,16 +182,16 @@ class GITTDataset:
             Size mismatch: The number of detected pulse starts and stops do
             not agree. This typically occurs due to a missing rest. You will
             likely need to manually remove affected pulse(s).
-            
+
         """
-        
+
         I_pulse = self._avg_pulse_current(pulse_sign)
-        
+
         if pulse_sign == 1:
             I_tmp = np.where(self.current > 0.5*I_pulse, 1, 0)
         elif pulse_sign == -1:
             I_tmp = np.where(self.current < 0.5*I_pulse, 1, 0)
-        
+
         idx1 = np.where(np.diff(I_tmp) > 0.9)[0]
         idx2 = np.where(I_tmp > -0.9)[0]
         start = np.intersect1d(idx1, idx2)
@@ -199,37 +199,37 @@ class GITTDataset:
         idx1 = np.where(I_tmp > 0.9)[0]
         idx2 = np.where(np.diff(I_tmp) < -0.9)
         stop = np.intersect1d(idx1, idx2)
-        
+
         if plot:
             plt.figure()
             plt.plot(self.time / 3600., 1e3*self.current, '-k')
             plt.plot(self.time[start] / 3600., 1e3*self.current[start], 'sg')
             plt.plot(self.time[stop] / 3600., 1e3*self.current[stop], 'or')
-            
+
             plt.xlabel('Time [h]')
             plt.ylabel('Current [mA]')
-            
+
             plt.show()
-            
+
         return start, stop
-    
+
     def get_stats(self, pulse_sign: int) -> dict:
-        
+
         time = self.time.copy()
         I_pulse = self._avg_pulse_current(pulse_sign)
         start, stop = self.find_pulses(pulse_sign, plot=False)
-        
+
         stats = {
             'num pulses': start.size,
             'avg I_pulse [A]': I_pulse,
             'avg t_pulse [s]': np.mean(time[stop] - time[start]),
             'avg t_rest [s]': np.mean(time[start[1:]] - time[stop[:-1]]),
         }
-        
+
         return stats
 
     def plot(self, y_key: str, t_units: str = 'h') -> None:
-        
+
         plt.figure()
         if y_key == 'current':
             y, ylabel = self.current.copy(), 'Current [A]'
@@ -237,29 +237,29 @@ class GITTDataset:
             y, ylabel = self.voltage.copy(), 'Voltage [V]'
         else:
             raise ValueError()
-        
+
         converter = {
             's': lambda t: t,
             'min': lambda t: t / 60.,
             'h': lambda t: t / 3600.,
             'day': lambda t: t / 3600. / 24.,
         }
-        
+
         x, xlabel = converter[t_units](self.time), f"Time [{t_units}]"
-        
+
         plt.plot(x, y)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
         plt.show()
-        
+
     def _avg_pulse_current(self, pulse_sign: int) -> float:
-        
+
         if pulse_sign == 1:
             I_pulse = np.mean(self.current[self.current > 0.])
         elif pulse_sign == -1:
             I_pulse = np.mean(self.current[self.current < 0.])
         else:
             raise ValueError(f"Invalid {pulse_sign=}, must be +1 or -1.")
-        
+
         return I_pulse

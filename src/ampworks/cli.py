@@ -10,7 +10,7 @@ def main():
         choices=['dQdV'],
         help='name of app to open',
     )
-    
+
     parser.add_argument(
         '--debug',
         action='store_true',

@@ -31,6 +31,8 @@ dash.register_page(
 layout = html.Div()
 
 # Callbacks
+
+
 @dash.callback(
     Output('terminal-out', 'children'),
     Input('summary-store', 'data'),

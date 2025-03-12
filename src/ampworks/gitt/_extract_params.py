@@ -24,7 +24,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
     cell : CellDescription
         Description of the cell.
     data : GITTDataset
-        The GITT data to process. 
+        The GITT data to process.
     return_stats : bool, optional
         Adds a second return value with some statistics from the experiment,
         see below. The default is False.
@@ -43,7 +43,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
         result in a diffusivity of `nan`. The default is 0.95.
     replace_nans : bool, optional
         If True (default) this uses interpolation to replace `nan` diffusivity
-        values. When False, `nan` values will persist into the output. 
+        values. When False, `nan` values will persist into the output.
 
     Returns
     -------
@@ -75,7 +75,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
         invalid_keys = list(options.keys())
         raise ValueError("'options' contains invalid key/value pairs:"
                          f" {invalid_keys=}")
-        
+
     if ref_location not in ['lower', 'upper']:
         raise ValueError(f"Invalid {ref_location=}, must be 'lower', 'upper'.")
 
@@ -91,13 +91,11 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
     # Find pulse indexes
     if pulse_sign == 1:
         I_pulse = np.mean(current[current > 0.])
-        I_tmp = np.where(current > 0.5*I_pulse, 1, 0)
     elif pulse_sign == -1:
         I_pulse = np.mean(current[current < 0.])
-        I_tmp = np.where(current < 0.5*I_pulse, 1, 0)
 
     start, stop = data.find_pulses(pulse_sign)
-    
+
     if start.size != stop.size:
         raise ValueError("Size mismatch: The number of detected pulse"
                          f" starts ({start.size}) and stops ({stop.size})"
@@ -120,7 +118,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
             xs[i] = 1.
         else:
             xs[i] = xs[i-1] - delta_capacity / cell.spec_capacity_AM
-            
+
     if ref_location == 'lower':
         xs = xs - xs.min() + xs_ref
     elif ref_location == 'upper':
@@ -161,7 +159,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
 
     Ds = 4./np.pi * (I_pulse*cell.molar_vol_AM / (cell.surf_area_AM*F))**2 \
         * (dOCV_dxs/dV_droot_t)**2
-    
+
     if any(np.isnan(Ds)) and replace_nans:
         nan = np.isnan(Ds)
 
@@ -177,7 +175,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
         Ds[nan] = interpolator(xs[nan])
 
     # Extract exchange current density
-    eta_ct = voltage[start + shifts] - voltage[start]    
+    eta_ct = voltage[start + shifts] - voltage[start]
     i0 = (R*data.avg_temperature / F) * (I_pulse / (eta_ct*cell.surf_area_AM))
 
     # Store output(s)
@@ -187,7 +185,7 @@ def extract_params(pulse_sign: int, cell: CellDescription, data: GITTDataset,
         'i0 [A/m2]': i0,
         'OCV [V]': OCV,
     })
-    
+
     params.sort_values(by='xs [-]', inplace=True, ignore_index=True)
 
     stats = {

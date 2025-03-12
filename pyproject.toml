@@ -1,5 +1,3 @@
-# pyproject.toml
-
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
@@ -21,7 +19,7 @@ maintainers = [
     { email = "corey.randall@nrel.gov" },
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
@@ -77,6 +75,7 @@ tests = [
 dev = [
     "nox",
     "flake8",
+    "autopep8",
     "codespell",
     "genbadge[all]",
     "ampworks[gui,docs,tests]",
