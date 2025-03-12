@@ -1,5 +1,19 @@
 # ampworks
 
+[![CI][ci-b]][ci-l] &nbsp;
+![tests][test-b] &nbsp;
+![coverage][cov-b] &nbsp;
+[![pep8][pep-b]][pep-l]
+
+[ci-b]: https://github.com/NREL/ampworks/actions/workflows/ci.yml/badge.svg
+[ci-l]: https://github.com/NREL/ampworks/actions/workflows/ci.yml
+
+[test-b]: https://github.com/NREL/ampworks/blob/main/images/tests.svg?raw=true
+[cov-b]: https://github.com/NREL/ampworks/blob/main/images/coverage.svg?raw=true
+
+[pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
+[pep-l]: https://www.python.org/dev/peps/pep-0008
+
 ## Summary
 `ampworks` is a collection of tools designed to process experimental battery data with a focus on model-relevant analyses. It currently provides functions for incremental capacity analysis and GITT data processing, helping extract key properties for life and physics-based models (e.g., SPM and P2D). Some tools, like the incremental capacity analysis module, also include graphical user interfaces for ease of use.
 
