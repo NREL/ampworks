@@ -20,13 +20,13 @@
 This software is in early development (Alpha), and the API may change as it matures.
 
 ## Installation
-`ampworks` can be installed from [PyPI](https://pypi.org/project/ampworks) use the following command.
+`ampworks` can be installed from [PyPI](https://pypi.org/project/ampworks) using the following command:
 
 ```
 pip install ampworks[gui]
 ```
 
-Using `[gui]` is optional. When included, the installation will setup optional dependencies that are needed for the optional graphical user interfaces (GUIs). However, the package is designed such that there are no features that specifically require the GUIs. Without the optional dependencies the package takes up less space on your computer, and will generally install faster.
+Using `[gui]` is optional. When included, the installation will setup extra dependencies that are needed for the graphical user interfaces (GUIs). However, the package is designed such that no features specifically require the GUIs. Without these optional dependencies the package takes up less space on your computer, and will generally install faster.
 
 For those interested in setting up a developer and/or editable version of this software please see the directions available in the "Development" section of our [documentation](https://ampworks.readthedocs.io/en/latest/development).
 
