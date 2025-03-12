@@ -85,9 +85,11 @@ fitter.plot(summary3['x'])
 
 # Using a GUI
 # ===========
-# You can run the following command to launch a GUI to do the fits one at a
-# time, manually. It is relatively straight forward to understand and use, but
-# is not indendend for batch processing, so is slow if you have many curves to
-# fit.
+# If you installed ampworks with the optional GUI dependencies (either by using
+# pip install ampworks[gui] or pip install .[dev]), then you can also perform
+# this analysis using a local web interface. Simple execute the command below
+# in your terminal (or Anaconda Prompt) to launch the GUI. It is relatively
+# straight forward to use, however, there the documentation is not complete nor
+# available. This will be added in a future release as the software matures.
 
-# amp.dqdv.run_gui()
+# ampworks --app dQdV
