@@ -1,0 +1,24 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# https://docs.readthedocs.io/en/stable/config-file/v2.html
+
+# Required
+version: 2
+
+# Set OS, Python version, and other tools
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: latest
+
+# Install local ampworks package
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
+
+# Location of sphinx configuration file
+sphinx:
+  configuration: docs/source/conf.py

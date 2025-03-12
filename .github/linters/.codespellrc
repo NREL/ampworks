@@ -1,2 +1,2 @@
 [codespell]
-skip = .git,.github,.nox,build,docs,images,reports
+skip = build,docs,images,reports

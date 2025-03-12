@@ -1,0 +1,128 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+b[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+
+jobs:
+  details:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_version: ${{ steps.tag.outputs.tag_version }}
+      local_version: ${{ steps.local.outputs.local_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract tag version details
+        id: tag
+        run: |
+          if [[ "${{ github.ref_type }}" = "tag" ]]; then
+            TAG_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "tag_version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+            echo "Tag version is $TAG_VERSION"
+          else
+            echo "No tag found"
+            exit 1
+          fi
+
+      - name: Extract local package version
+        id: local
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+          LOCAL_VERSION=$(python -c "import ampworks; print(ampworks.__version__)")
+
+          echo "local_version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Local version is $LOCAL_VERSION"
+
+  check-version:
+    needs: details
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check version details agasint PyPI, tag, etc.
+        run: |
+          TAG_VERSION=${{ needs.details.outputs.tag_version }}
+          LOCAL_VERSION=${{ needs.details.outputs.local_version }}
+
+          cd scripts
+
+          pip install requests packaging
+          python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
+
+  build:
+    name: (build ubuntu-latest, 3.13)
+    needs: [details, check-version]
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds
+          path: dist/*
+
+  pypi-publish:
+    name: Upload to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          pattern: builds*
+          merge-multiple: true
+
+      - name: Check files
+        run: ls dist
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install twine
+        run: pip install twine
+
+      - name: Check builds and upload to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine check dist/*
+          twine upload dist/*

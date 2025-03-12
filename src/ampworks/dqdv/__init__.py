@@ -1,4 +1,13 @@
+"""
+TODO
+----
+
+"""
+
+from __future__ import annotations
+
 import warnings
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -7,13 +16,16 @@ import scipy.interpolate as interp
 from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
 
+if TYPE_CHECKING:  # pragma: no cover
+    import numpy.typing as npt
+
 
 class Fitter:
 
     def __init__(self, df_neg: pd.DataFrame = None, df_pos: pd.DataFrame = None,
                  df_cell: pd.DataFrame = None, **kwargs) -> None:
         """
-        Wrapper class for differential capacity analysis.
+        Wrapper class for differential analysis.
 
         Parameters
         ----------
@@ -330,14 +342,14 @@ class Fitter:
         else:
             return ocv
 
-    def err_terms(self, params: np.ndarray,
-                  full_output: bool = False) -> tuple[float] | dict:
+    def err_terms(self, params: npt.ArrayLike,
+                  full_output: bool = False) -> dict:
         """
         Calculate error between the fit and data.
 
         Parameters
         ----------
-        params : 1D np.array
+        params : ArrayLike, shape(n,)
             Array for x0_neg, x100_neg, x0_pos, x100_pos, and iR (optional).
         full_output : bool, optional
             Flag to return all data. The default is False.
@@ -360,6 +372,8 @@ class Fitter:
         function includes more than one term.
 
         """
+
+        params = np.asarray(params)
 
         if params.size == 5:
             x0_neg, x100_neg, x0_pos, x100_pos, iR = params
@@ -384,11 +398,14 @@ class Fitter:
         err2 = np.mean(np.abs((dqdv_fit - dqdv_dat) / dqdv_dat))
         err3 = np.mean(np.abs((dvdq_fit - dvdq_dat) / dvdq_dat))
 
-        if not full_output:
-            return err1, err2, err3
+        output = {
+            'err1': err1,
+            'err2': err2,
+            'err3': err3,
+        }
 
-        else:
-            output = {
+        if full_output:
+            output.update({
                 'soc': self._soc,
                 'soc_mid': self._soc_mid,
                 'V_dat': V_dat,
@@ -397,21 +414,18 @@ class Fitter:
                 'dqdv_fit': dqdv_fit,
                 'dvdq_dat': dvdq_dat,
                 'dvdq_fit': dvdq_fit,
-                'err1': err1,
-                'err2': err2,
-                'err3': err3,
-            }
+            })
 
-            return output
+        return output
 
-    def err_func(self, params: np.ndarray) -> float:
+    def err_func(self, params: npt.ArrayLike) -> float:
         """
         The cost function for coarse_search and constrained_fit.
 
         Parameters
         ----------
-        params : 1D np.array
-            Array for x0_neg, x100_neg, x0_pos, x100_pos, and iR (optional).
+        params : ArrayLike, shape(n,)
+            Array for x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
 
         Returns
         -------
@@ -420,17 +434,17 @@ class Fitter:
 
         """
 
-        err1, err2, err3 = self.err_terms(params)
+        output = self.err_terms(params)
 
         err = 0.
         if 'voltage' in self.cost_terms:
-            err += err1
+            err += output['err1']
 
         if 'dqdv' in self.cost_terms:
-            err += err2
+            err += output['err2']
 
         if 'dvdq' in self.cost_terms:
-            err += err3
+            err += output['err3']
 
         return err
 
@@ -471,23 +485,24 @@ class Fitter:
 
         index = np.argmin(errs)
 
-        summary = {'nfev': len(errs),
-                   'fun': errs[index],
-                   'x': np.array(list(valid_ps[index].values())),
-                   'x_map': list(valid_ps[index].keys())
-                   }
+        summary = {
+            'nfev': len(errs),
+            'fun': errs[index],
+            'x': np.array(list(valid_ps[index].values())),
+            'x_map': list(valid_ps[index].keys()),
+        }
 
         return summary
 
-    def constrained_fit(self, x0: np.ndarray) -> dict:
+    def constrained_fit(self, x0: npt.ArrayLike) -> dict:
         """
         Run a trust-constrained local optimization routine to minimize error
         between the fit and data.
 
         Parameters
         ----------
-        x0 : 1D np.array
-            Initial x0_neg, x100_neg, x0_pos, x100_pos, iR (optional) values.
+        x0 : ArrayLike, shape(n,)
+            Initial x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
 
         Returns
         -------
@@ -496,7 +511,7 @@ class Fitter:
 
         """
 
-        x0 = x0.copy()
+        x0 = np.asarray(x0)
 
         output = self.err_terms(x0, full_output=True)
 
@@ -521,7 +536,7 @@ class Fitter:
             upper[-1] = 0.
 
         bounds = [(L, U) for L, U in zip(lower, upper)]
-        
+
         constr_neg = opt.LinearConstraint([[1, -1, 0, 0, 0]], -np.inf, 0.)
         constr_pos = opt.LinearConstraint([[0, 0, 1, -1, 0]], -np.inf, 0.)
         constr_iR = opt.LinearConstraint([[0, 0, 0, 0, 1]], *bounds[-1])
@@ -548,14 +563,14 @@ class Fitter:
 
         return summary
 
-    def plot(self, params: np.ndarray, **kwargs) -> None:
+    def plot(self, params: npt.ArrayLike, **kwargs) -> None:
         """
         Plot the fit vs. data.
 
         Parameters
         ----------
-        params : 1D np.array
-            Parameter array x0_neg, x100_neg, x0_pos, x100_pos, iR (optional).
+        params : ArrayLike, shape(n,)
+            Parameters x0_neg, x100_neg, x0_pos, x100_pos, and optionally iR.
         **kwargs : dict, optional
             Keyword arguments. Optional key/value pairs are below:
 
@@ -710,7 +725,7 @@ def preprocess_df(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
     return output
 
 
-def post_process(capacity: np.ndarray, x: np.ndarray) -> dict:
+def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
     """
     Determine degradation parameters.
 
@@ -719,32 +734,32 @@ def post_process(capacity: np.ndarray, x: np.ndarray) -> dict:
     and total inventory losses (TIL). TIL is used instead of LLI (loss of
     lithium inventory) because this analysis is also valid for intercalation
     electrodes with active species other than lithium.
-    
+
     Electrode capacities (Q) and losses of active material (LAM) are
-    
+
     .. math::
-    
-        Q_{\rm ed} = \frac{\rm capacity}{x_{100, \rm ed} - x_{0, \rm ed}}, \\
-        {\rm LAM}_{\rm ed} = 1 - \frac{Q_{\rm ed}}{Q_{\rm ed}[0]},
-        
+
+        Q_{ed} = \\frac{\\rm capacity}{x_{100,ed} - x_{0,ed}}, \\quad \\quad
+        {\\rm LAM}_{ed} = 1 - \\frac{Q_{ed}}{Q_{ed}[0]},
+
     where :math:`ed` is used generically 'electrode'. In the output, subscripts
     'neg' and 'pos' are used to differentiate between the negative and positive
     electrodes, respectively. Loss of inventory is
-    
+
     .. math::
-    
-        I = x_{100, \rm neg}Q_{\rm neg} + x_{100, \rm pos}Q_{\rm pos}, \\
-        {\rm TIL} = 1 - \frac{I}{I[0]}, 
-        
+
+        I = x_{100,neg}Q_{neg} + x_{100,pos}Q_{pos}, \\quad \\quad
+        {\\rm TIL} = 1 - \\frac{I}{I[0]},
+
     where :math:`I` is an array of inventories calculated from the capacities
     :math:`Q` above. The 'offset' output can also sometimes serve as a helpful
     metric. It is simply the difference between 'x0_neg' and 'x0_pos'.
 
     Parameters
     ----------
-    capacity : 1D np.array
+    capacity : ArrayLike, shape(n,)
         Full cell capacity values per fitted profile.
-    x : 2D np.array
+    x : ArrayLike, shape(n,4)
         Fitted x0/x100 values. Row i corresponds to capacity[i], with column
         order: x0_neg, x100_neg, x0_pos, x100_pos.
 
@@ -764,6 +779,9 @@ def post_process(capacity: np.ndarray, x: np.ndarray) -> dict:
         other outputs are unitless.
 
     """
+
+    x = np.asarray(x)
+    capacity = np.asarray(capacity)
 
     if capacity.size != x.shape[0]:
         raise ValueError(f"{capacity.size=} != {x.shape[0]=}.")
@@ -806,6 +824,6 @@ def run_gui() -> None:
 
     """
 
-    from . import _gui
+    from .gui_files import _gui
 
     _gui.run()

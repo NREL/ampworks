@@ -1,16 +1,62 @@
+# ampworks
+
+[![CI][ci-b]][ci-l] &nbsp;
+![tests][test-b] &nbsp;
+![coverage][cov-b] &nbsp;
+[![pep8][pep-b]][pep-l]
+
+[ci-b]: https://github.com/NREL/ampworks/actions/workflows/ci.yml/badge.svg
+[ci-l]: https://github.com/NREL/ampworks/actions/workflows/ci.yml
+
+[test-b]: https://github.com/NREL/ampworks/blob/main/images/tests.svg?raw=true
+[cov-b]: https://github.com/NREL/ampworks/blob/main/images/coverage.svg?raw=true
+
+[pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
+[pep-l]: https://www.python.org/dev/peps/pep-0008
+
+## Summary
+`ampworks` is a collection of tools designed to process experimental battery data with a focus on model-relevant analyses. It currently provides functions for incremental capacity analysis and GITT data processing, helping extract key properties for life and physics-based models (e.g., SPM and P2D). Some tools, like the incremental capacity analysis module, also include graphical user interfaces for ease of use.
+
+This software is in early development (Alpha), and the API may change as it matures.
+
 ## Installation
-To install, download the repository files onto your local machine, or clone the repo:
+`ampworks` can be installed from [PyPI](https://pypi.org/project/ampworks) use the following command.
+
 ```
-git clone https://github.com/NREL/ampworks.git
+pip install ampworks[gui]
 ```
 
-``ampworks`` only supports Python versions 3.9 through 3.13. Make sure one of these is installed on your computer. If you are new to Python, we recommend download and using [Anaconda](https://anaconda.com/download/success) to get started.
+Using `[gui]` is optional. When included, the installation will setup optional dependencies that are needed for the optional graphical user interfaces (GUIs). However, the package is designed such that there are no features that specifically require the GUIs. Without the optional dependencies the package takes up less space on your computer, and will generally install faster.
 
-With a supported Python version installed and the repo files available on your local machine, use your terminal to navigate into the repo folder, and run the command below to install ``ampworks``.
+For those interested in setting up a developer and/or editable version of this software please see the directions available in the "Development" section of our [documentation](https://ampworks.readthedocs.io/en/latest/development).
+
+## Get Started
+The best way to get started is by exploring the `examples` folder, which includes real datasets and demonstrates key functionality. These examples will evolve as the software progresses.
+
+**Notes:**
+* If you are new to Python, check out [Spyder IDE](https://www.spyder-ide.org/). Spyder is a powerful interactive development environment (IDE) that can make programming in Python more approachable to new users.
+* Another friendly option for getting started in Python is to use [Jupyter Notebooks](https://jupyter.org/). We write our examples in Jupyter Notebooks since they support both markdown blocks for explanations and executable code blocks.
+* Python, Spyder, and Jupyter Notebooks can be setup using [Anaconda](https://www.anaconda.com/download/success). Anaconda provides a convenient way for new users to get started with Python due to its friendly graphical installer and environment manager.
+
+## Citing this Work
+This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
+
+> Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software. url: https://github.com/NREL/ampworks. doi: (awaiting doi).
+
+For convenience, we also provide the following for your BibTex:
+
 ```
-pip install .
+@misc{Randall-2024,
+  title = {{ampworks: Battery data analysis tools in Python [SWR-25-39]}},
+  author = {Randall, Corey R.},
+  doi = {awaiting doi},
+  url = {https://github.com/NREL/ampworks},
+  year = {2025},
+}
 ```
-If you plan to make changes to the source code, we also support editable installations. When installed in editable mode, any changes you make to the source code are immediately reflected in your installed package. We recommend including the optional developer dependencies when installing in editable mode. To install with these configurations, run the following code instead of the one above.
-```
-pip install -e .[dev]
-```
+
+## Contributing
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/ampworks/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines](https://ampworks.readthedocs.io/en/latest/development).
+
+## Disclaimer
+This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

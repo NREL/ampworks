@@ -6,12 +6,12 @@ from scipy._lib._util import _RichResult  # Used to make printing pretty
 # ===============
 # The negative electrode dataframe (df_neg) and positive electrode dataframe
 # (df_pos) must have columns 'soc' and 'voltage'. The full cell dataframe needs
-# 'soc', 'voltage', 'dsoc_dV', and 'dV_dsoc' columns. 
+# 'soc', 'voltage', 'dsoc_dV', and 'dV_dsoc' columns.
 
 # An important note: The fitting routine assumes all dataframe 'soc' columns
 # are in the reference direction of the full cell. Therefore, the negative
 # electrode voltage should decrease as 'soc' increases whereas the positive
-# electrode and full cell voltages should increse as their 'soc' increase.
+# electrode and full cell voltages should increase as their 'soc' increase.
 
 df_neg = pd.read_csv('an_T23_C_24_dis.csv')  # negative electrode data
 df_pos = pd.read_csv('ca_T23_C_6_ch.csv')    # positive electrode data
@@ -25,10 +25,10 @@ df_cell_EOL = pd.read_csv('charge3866.csv')  # full cell at end of life
 # arguments you can see by running help(amp.dqdv.Fitter). Mostly the defaults
 # are good, but you might want to change 'cost_terms' to include 'voltage' so
 # that an iR offset is fit in addition to the xmin/xmax values of the two
-# electrodes. 
+# electrodes.
 
 # Any keyword argument can also be changed after initializing the instance, as
-# shown below. 
+# shown below.
 
 fitter = amp.dqdv.Fitter(df_neg, df_pos, df_cell_BOL)
 fitter.cost_terms = ['voltage', 'dqdv', 'dvdq']
@@ -72,7 +72,7 @@ fitter.plot(summary2['x'])
 # Swapping to another data set
 # ============================
 # There is no need to create a 'fitter' instance for multiple files if you are
-# batch processing data. Instead, fit the full cell data starting at beggining
+# batch processing data. Instead, fit the full cell data starting at beginning
 # of life (BOL) and moving toward end of life (EOL). A guess from the previous
 # previous best fit is typically good enough that there is no need to re-run a
 # 'coarse_search()' routine.
@@ -85,9 +85,11 @@ fitter.plot(summary3['x'])
 
 # Using a GUI
 # ===========
-# You can run the following command to launch a GUI to do the fits one at a
-# time, manually. It is relatively straight forward to understand and use, but
-# is not indendend for batch processing, so is slow if you have many curves to
-# fit.
+# If you installed ampworks with the optional GUI dependencies (either by using
+# pip install ampworks[gui] or pip install .[dev]), then you can also perform
+# this analysis using a local web interface. Simple execute the command below
+# in your terminal (or Anaconda Prompt) to launch the GUI. It is relatively
+# straight forward to use, however, there the documentation is not complete nor
+# available. This will be added in a future release as the software matures.
 
-# amp.dqdv.run_gui()
+# ampworks --app dQdV

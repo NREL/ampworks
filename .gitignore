@@ -7,7 +7,13 @@ __pycache__/
 *$py.class
 
 # C extensions
+*.c
 *.so
+*.pyd
+*.pxi
+
+# VSCode
+.vscode/
 
 # Distribution / packaging
 .Python
@@ -23,6 +29,7 @@ parts/
 sdist/
 var/
 wheels/
+wheelhouse/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -39,6 +46,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+references/
 reports/
 htmlcov/
 .tox/
@@ -74,6 +82,8 @@ instance/
 
 # Sphinx documentation
 docs/build/
+docs/source/api
+docs/jupyter_execute
 
 # PyBuilder
 .pybuilder/
