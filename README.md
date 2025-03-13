@@ -41,7 +41,7 @@ The best way to get started is by exploring the `examples` folder, which include
 ## Citing this Work
 This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
 
-> Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software. url: https://github.com/NREL/ampworks. doi: (awaiting doi).
+> Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software. url: https://github.com/NREL/ampworks. doi: https://doi.org/10.11578/dc.20250313.2.
 
 For convenience, we also provide the following for your BibTex:
 
@@ -49,7 +49,7 @@ For convenience, we also provide the following for your BibTex:
 @misc{Randall-2024,
   title = {{ampworks: Battery data analysis tools in Python [SWR-25-39]}},
   author = {Randall, Corey R.},
-  doi = {awaiting doi},
+  doi = {10.11578/dc.20250313.2},
   url = {https://github.com/NREL/ampworks},
   year = {2025},
 }
