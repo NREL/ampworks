@@ -180,10 +180,6 @@
     border-bottom: 3px solid var(--amp-secondary);    
 }
 
-.nav-link:hover:active {
-    color: var(--text-color) !important;
-}
-
 .nav-link:focus:focus-visible {
     border-radius: 5px !important;
     box-shadow: 0 0 3px 3px var(--amp-secondary) !important;

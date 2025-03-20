@@ -46,7 +46,7 @@ This work was authored by researchers at the National Renewable Energy Laborator
 For convenience, we also provide the following for your BibTex:
 
 ```
-@misc{Randall-2024,
+@misc{Randall-2025,
   title = {{ampworks: Battery data analysis tools in Python [SWR-25-39]}},
   author = {Randall, Corey R.},
   doi = {10.11578/dc.20250313.2},
