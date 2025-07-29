@@ -17,6 +17,8 @@ __version__ = '0.0.1'
 __all__ = [
     'dqdv',
     'gitt',
+    'ici',
+    'io',
     'plotutils',
     'utils',
 ]
@@ -30,6 +32,12 @@ def __getattr__(attr):
     elif attr == 'gitt':
         import ampworks.gitt as gitt
         return gitt
+    elif attr == 'ici':
+        import ampworks.ici as ici
+        return ici
+    elif attr == 'io':
+        import ampworks.io as io 
+        return io
     elif attr == 'plotutils':
         import ampworks.plotutils as plotutils
         return plotutils
