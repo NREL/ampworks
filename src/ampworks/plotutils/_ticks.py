@@ -25,6 +25,10 @@ def minor_ticks(ax: Axes, xdiv: int = None, ydiv: int = None) -> None:
     -------
     None.
 
+    Notes
+    -----
+    This function ignores axes with logarithmic scaling.
+
     """
 
     axs = atleast_1d(ax)
