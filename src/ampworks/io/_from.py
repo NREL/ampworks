@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import pandas as pd 
+import pandas as pd
 
 from ampworks.io._dataset import Dataset
-    
+
 
 # Define expected headers and their aliases
 def format_alias(name: str, unit: str) -> str:
@@ -26,7 +26,7 @@ e_names = ['', 'energy']
 e_units = ['wh', 'whr', 'watthr']
 
 HEADER_ALIASES = {
-    'Seconds': [format_alias(n, u) for n in t_names for u in t_units], 
+    'Seconds': [format_alias(n, u) for n in t_names for u in t_units],
     'Volts': [format_alias(n, u) for n in v_names for u in v_units],
     'Amps': [format_alias(n, u) for n in i_names for u in i_units],
 
@@ -50,21 +50,21 @@ def strip_chars(string: str) -> str:
 # Matches input headers with aliases of the standard headers
 def header_matches(headers: list[str], target_aliases: list[str]) -> bool:
     headers = [strip_chars(h) for h in headers]
-    
+
     checks = {}
     for k in target_aliases:
         if any(alias in headers for alias in HEADER_ALIASES[k]):
             checks[k] = True
         else:
             checks[k] = False
-            
+
     return all(checks.values())
 
 
 # Standardizes the column header names and the data units
 def standardize_headers(data):
     df = Dataset()
-    
+
     UNIT_FACTORS = {
         'Amps': [
             ('ma', 0.001),
@@ -78,10 +78,10 @@ def standardize_headers(data):
         ],
         'Seconds': [
             ('min', 60.),
-            ('mins', 60.), 
+            ('mins', 60.),
             ('minute', 60.),
             ('minutes', 60.),
-            ('h', 3600.), 
+            ('h', 3600.),
             ('hr', 3600.),
             ('hrs', 3600.),
             ('hour', 3600.),
@@ -95,7 +95,7 @@ def standardize_headers(data):
             h2 = strip_chars(h1)
             if h2 not in HEADER_ALIASES[std_header]:
                 continue
-            
+
             # Standardize units
             normalize = 1
             for key, factor in UNIT_FACTORS.get(std_header, []):
@@ -120,10 +120,12 @@ def standardize_headers(data):
             h2 = strip_chars(header)
             if h2 in Q_headers:
                 df['Ah'] = data[header]
-                df.loc[df['State'] == 'D', 'Ah'] = data[header.replace('Charge', 'Discharge')]
+                df.loc[df['State'] == 'D', 'Ah'] = data[header.replace(
+                    'Charge', 'Discharge')]
             if h2 in E_headers:
                 df['Wh'] = data[header]
-                df.loc[df['State'] == 'D', 'Wh'] = data[header.replace('Charge', 'Discharge')]                
+                df.loc[df['State'] == 'D', 'Wh'] = data[header.replace(
+                    'Charge', 'Discharge')]
 
     # Final data typing and check to see which headers may still be missing
     for std_header in HEADER_ALIASES.keys():
@@ -135,7 +137,7 @@ def standardize_headers(data):
             else:
                 df[std_header] = df[std_header].replace('#', '', regex=True)
                 df[std_header] = df[std_header].replace(',', '', regex=True)
-                df[std_header] = df[std_header].astype(float)            
+                df[std_header] = df[std_header].astype(float)
         else:
             print(f"No valid headers found for '{std_header}' data")
 
@@ -143,29 +145,29 @@ def standardize_headers(data):
 
 
 def read_table(filepath):
-    
+
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
-    
+
     datafile = open(filepath, encoding='latin1')
-    
+
     counter = 0
     for line in datafile:
-        
+
         if header_matches(line.split('\t'), REQUIRED_HEADERS):
             df = pd.read_csv(filepath, sep='\t', skiprows=counter,
                              engine='python', encoding_errors='ignore')
-            
+
             return standardize_headers(df)
-        
+
         counter += 1
 
     print(f"No valid headers found in {filepath}")
 
 
 def read_excel(filepath):
-    
+
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
-    
+
     workbook = pd.ExcelFile(filepath)
     for sheet in workbook.sheet_names:
         preview = workbook.parse(sheet, header=None, nrows=20, dtype=str)
@@ -179,27 +181,27 @@ def read_excel(filepath):
 
         if header_row is not None:
             df = workbook.parse(sheet, header=header_row)
-            
+
             return standardize_headers(df)
-        
+
     print(f"No valid headers found in any sheet of {filepath}")
 
 
 def read_csv(filepath):
-    
+
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
-    
+
     datafile = open(filepath, encoding='latin1')
-    
+
     counter = 0
     for line in datafile:
-        
+
         if header_matches(line.split(','), REQUIRED_HEADERS):
             df = pd.read_csv(filepath, sep=',', skiprows=counter,
                              engine='python', encoding_errors='ignore')
-            
+
             return standardize_headers(df)
-        
+
         counter += 1
 
     print(f"No valid headers found in {filepath}")

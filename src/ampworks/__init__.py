@@ -36,7 +36,7 @@ def __getattr__(attr):
         import ampworks.ici as ici
         return ici
     elif attr == 'io':
-        import ampworks.io as io 
+        import ampworks.io as io
         return io
     elif attr == 'plotutils':
         import ampworks.plotutils as plotutils
@@ -49,3 +49,20 @@ def __getattr__(attr):
 def __dir__():
     public_symbols = (globals().keys() | __all__)
     return list(public_symbols)
+
+
+def _in_interactive():
+    try:
+        from IPython import get_ipython
+        return get_ipython() is not None
+    except Exception:
+        return False
+
+
+def _in_notebook():
+    try:
+        from IPython import get_ipython
+        shell = get_ipython().__class__.__name__
+        return shell in ('ZMQInteractiveShell',)  # Jupyter Notebook or Lab
+    except Exception:
+        return False

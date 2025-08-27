@@ -261,43 +261,43 @@ class ICIDataset:
             raise ValueError(f"Invalid {pulse_sign=}, must be +1 or -1.")
 
         return I_pulse
-    
+
     def extract_params(self, tmin=1, tmax=10, V=0.63056e-6, A=1.54):
-        
+
         df = pd.DataFrame({
             'time_s': self.time,
             'current_A': self.current,
             'voltage_V': self.voltage,
         })
-        
+
         # Zero out currents based on threshold
         threshold = 0.1*df.current_A[df.current_A.abs() > 0].mean()
         df.current_A = df.current_A.mask(df.current_A.abs() <= threshold, 0.0)
-        
+
         # States based on current direction: charge, discharge, or rests
         df['state'] = 'R'
         df.loc[df.current_A > 0, 'state'] = 'C'
         df.loc[df.current_A < 0, 'state'] = 'D'
-        
+
         # Counter each time a rest/charge or rest/discharge changeover occurs
         rest = (df.state != 'R') & (df.state.shift(fill_value='R') == 'R')
         df['rest'] = rest.cumsum()
-        
+
         # Relative time of each rest/charge or rest/discharge step
         groups = df.groupby(['rest', 'state'])
         df['step_time'] = groups.time_s.transform(lambda x: x - x.iloc[0])
-        
+
         # Remove last cycle if not complete, i.e., ended on charge or discharge
         if df.state.iloc[-1] != 'R':
             df = df[df.rest != df.rest.max()].reset_index(drop=True)
-            
+
         # Record summary stats for each loop, immediately before the rests
         groups = df[df.state != 'R'].groupby('rest', as_index=False)
         summary = groups.agg(lambda x: x.iloc[-1])
-        
+
         # Store slope and intercepts (V = m*t^0.5 + b) for each rest
         groups = df.groupby('rest')
-        
+
         regression = None
         for r, g in groups:
             g = g[
@@ -305,10 +305,10 @@ class ICIDataset:
                 (g.step_time >= tmin) &
                 (g.step_time <= tmax)
             ]
-            
+
             x = np.sqrt(g.step_time)
             y = g.voltage_V
-            
+
             result = linregress(x, y)
             new_row = pd.DataFrame({
                 'rest': [r],
@@ -317,25 +317,25 @@ class ICIDataset:
                 's': [result.slope],
                 's_err': [result.stderr],
             })
-        
+
             regression = pd.concat([regression, new_row], ignore_index=True)
-            
+
         # Collect outputs
         out = pd.merge(summary, regression, on='rest')
-        
+
         eta_ct = out.voltage_V - out['E0']
         dEdt = np.gradient(out.voltage_V, out.time_s)
-        
+
         R = 8.314e3  # Gas constant [J/kmol/K]
         F = 96485.33e3  # Faraday's constant [C/kmol]
-        
+
         out['R'] = eta_ct / out.current_A
         out['R_err'] = out['E0_err'] / out.current_A.abs()
         out['k'] = -out['s'] / out.current_A
         out['k_err'] = out['s_err'] / out.current_A.abs()
         out['D'] = 4/np.pi * (V/A * dEdt/out['s'])**2
         out['i0'] = (R*self.avg_temperature / F) * (out.current_A / (eta_ct*A))
-        
+
         out.drop(['E0', 'E0_err', 's', 's_err'], axis=1, inplace=True)
-        
+
         return out

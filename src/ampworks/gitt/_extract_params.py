@@ -38,10 +38,10 @@ def extract_params(sign: int, cell: CellDescription, data: GITTDataset,
         Only returned when 'return_stats' is True. Provides key/value pairs for
         the number of pulses, average pulse current, and average rest and pulse
         times.
-        
+
     References
     ----------
-    .. [1]
+    TODO
 
     """
 
@@ -99,31 +99,31 @@ def extract_params(sign: int, cell: CellDescription, data: GITTDataset,
     dV_droot_t = np.zeros_like(xs)
     shifts = np.zeros(xs.size, dtype=int)
     for i in range(xs.size):
-        
+
         j1_target = time[start[i]] + 1.
         j2_target = time[start[i]] + 10.
         j_candidates = np.arange(start[i] + 1, time.size)
-        
+
         j1_rel = np.argmin(np.abs(time[j_candidates] - j1_target))
         j2_rel = np.argmin(np.abs(time[j_candidates] - j2_target))
-        
+
         shift = j_candidates[j1_rel] - start[i]
         end = j_candidates[j2_rel]
-        
+
         if end - (start[i] + shift) < 10:
-            end += 10 
-                
+            end += 10
+
         t_pulse = time[start[i] + shift:end + 1] - time[start[i]]
         V_pulse = voltage[start[i] + shift:end + 1]
 
         result = linregress(np.sqrt(t_pulse), V_pulse)
-            
-        shifts[i] = shift    
+
+        shifts[i] = shift
         dV_droot_t[i] = result.slope
-        
+
     Ds = 4./np.pi * (I_pulse*cell.molar_vol_AM / (cell.surf_area_AM*F))**2 \
-       * (dEeq_dxs/dV_droot_t)**2
-        
+        * (dEeq_dxs/dV_droot_t)**2
+
     # Exchange current density
     eta_ct = voltage[start + shifts] - voltage[start]
     i0 = (R*data.avg_temperature / F) * (I_pulse / (eta_ct*cell.surf_area_AM))

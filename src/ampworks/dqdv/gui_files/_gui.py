@@ -3,6 +3,7 @@ import webbrowser
 
 import dash
 import dash_bootstrap_components as dbc
+
 from dash_breakpoints import WindowBreakpoints
 from dash import dcc, html, Output, Input, State
 from dash_extensions.pages import setup_page_components
@@ -44,8 +45,8 @@ main_page = html.Div(
 
 dash_link = html.A(
     className='link',
-    children='dash 2.18',
     href='https://dash.plotly.com/',
+    children='dash ' + dash.__version__,
 )
 
 footer = html.Div(
@@ -102,12 +103,17 @@ app.clientside_callback(
 )
 
 
-def run(debug: bool = False) -> None:
+def run(debug: bool = False, jupyter_mode: str = 'external',
+        jupyter_height: int = 650) -> None:
 
-    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        webbrowser.open_new("http://127.0.0.1:8050/")
+    PARENT_PROCESS = os.environ.get('WERKZEUG_RUN_MAIN') != 'true'
+
+    if PARENT_PROCESS and jupyter_mode != 'inline':
+        webbrowser.open_new('http://127.0.0.1:8050/')
 
     app.run(
         debug=debug,
+        jupyter_mode=jupyter_mode,
+        jupyter_height=jupyter_height,
         dev_tools_silence_routes_logging=True,
     )
