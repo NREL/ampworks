@@ -124,10 +124,7 @@ def test_tick_direction():
     xparams = ax.xaxis.get_tick_params()
     yparams = ax.yaxis.get_tick_params()
 
-    if 'bottom' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
-        xparams['bottom'] = xparams.get('left')
-
-    if 'top' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
+    if 'top' not in xparams.keys():  # for backwards mpl, v <= 3.9
         xparams['top'] = xparams.get('right')
 
     assert xparams['direction'] == 'in' and xparams['top']
@@ -142,10 +139,7 @@ def test_tick_direction():
     xparams = ax.xaxis.get_tick_params()
     yparams = ax.yaxis.get_tick_params()
 
-    if 'bottom' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
-        xparams['bottom'] = xparams.get('left')
-
-    if 'top' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
+    if 'top' not in xparams.keys():  # for backwards mpl, v <= 3.9
         xparams['top'] = xparams.get('right')
 
     assert xparams['direction'] == 'out' and not xparams['top']
@@ -170,10 +164,7 @@ def test_format_ticks():
     assert isinstance(xloc, AutoMinorLocator) and xloc.ndivs == 4
     assert isinstance(yloc, AutoMinorLocator) and yloc.ndivs == 3
 
-    if 'bottom' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
-        xparams['bottom'] = xparams.get('left')
-
-    if 'top' not in list(xparams.keys()):  # for backwards mpl, v <= 3.9
+    if 'top' not in xparams.keys():  # for backwards mpl, v <= 3.9
         xparams['top'] = xparams.get('right')
 
     assert xparams['direction'] == 'out' and not xparams['top']
