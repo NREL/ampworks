@@ -18,7 +18,7 @@ __all__ = [
     'dqdv',
     'gitt',
     'ici',
-    'io',
+    'data',
     'plotutils',
     'utils',
 ]
@@ -35,7 +35,7 @@ def __getattr__(attr):
     elif attr == 'ici':
         import ampworks.ici as ici
         return ici
-    elif attr == 'io':
+    elif attr == 'data':
         import ampworks.data as data
         return data
     elif attr == 'plotutils':
