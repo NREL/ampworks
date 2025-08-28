@@ -1,10 +1,10 @@
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+# https://sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# https://sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import ampworks as amp
 
@@ -16,7 +16,7 @@ release = amp.__version__
 
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+# https://sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'sphinx.ext.todo',
@@ -49,7 +49,7 @@ highlight_language = 'console'
 
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# https://sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/layout.html
 
 html_theme = 'pydata_sphinx_theme'
@@ -91,13 +91,13 @@ html_theme_options = {
 }
 
 # -- Options for napoleon ----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+# https://sphinx-doc.org/en/master/usage/extensions/napoleon.html
 
 napoleon_use_rtype = False
 napoleon_custom_sections = [
-    "TODO",
-    "Summary",
-    "Accessing the documentation",
+    'TODO',
+    'Summary',
+    'Accessing the documentation',
 ]
 
 
@@ -126,3 +126,31 @@ autoapi_options = [
 nb_execution_timeout = 300
 nb_number_source_lines = True
 myst_enable_extensions = ['amsmath', 'dollarmath']
+
+
+# -- Custom options ----------------------------------------------------------
+# The Dataset class inherits from pd.DataFrame, but it is not worth it to keep
+# all of the inherited docstrings. Rather, the user should be pointed to the
+# pandas documentation for this. The following provides a list of which methods
+# to keep in the ampworks documentation. The rest is excluded.
+
+keep = [
+    'from_csv',
+    'from_excel',
+    'from_table',
+    'interactive_xy_plot',
+]
+
+
+def skip_util_classes(app, what, name, obj, skip, options):
+            
+    if what in ['method', 'attribute', 'property'] and '.Dataset.' in name:
+        if name.split('.')[-1] not in keep:
+            skip = True
+            
+    return skip
+
+
+def setup(sphinx):
+   sphinx.connect('autoapi-skip-member', skip_util_classes)
+

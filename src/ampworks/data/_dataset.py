@@ -5,6 +5,7 @@ import plotly.express as px
 
 
 class Dataset(pd.DataFrame):
+    """General dataset."""
 
     @property
     def _constructor(self) -> Dataset:
@@ -12,17 +13,17 @@ class Dataset(pd.DataFrame):
 
     @classmethod
     def from_csv(cls, filepath):
-        from ampworks.io._from import read_csv
+        from ampworks.data._read import read_csv
         return read_csv(filepath)
 
     @classmethod
     def from_excel(cls, filepath):
-        from ampworks.io._from import read_excel
+        from ampworks.data._read import read_excel
         return read_excel(filepath)
 
     @classmethod
     def from_table(cls, filepath):
-        from ampworks.io._from import read_table
+        from ampworks.data._read import read_table
         return read_table(filepath)
 
     def downsample(self, column: str, *, n: int = None, frac: int = None,

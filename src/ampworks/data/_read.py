@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from ampworks.io._dataset import Dataset
+from ampworks.data._dataset import Dataset
 
 
 # Define expected headers and their aliases
@@ -145,6 +145,7 @@ def standardize_headers(data):
 
 
 def read_table(filepath):
+    """Read tab-delimited file."""
 
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
 
@@ -165,6 +166,7 @@ def read_table(filepath):
 
 
 def read_excel(filepath):
+    """Read excel file."""
 
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
 
@@ -188,6 +190,7 @@ def read_excel(filepath):
 
 
 def read_csv(filepath):
+    """Read csv file."""
 
     REQUIRED_HEADERS = ['Seconds', 'Volts', 'Amps']
 

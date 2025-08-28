@@ -12,7 +12,7 @@ includes search functionality and more detailed examples.
 
 """
 
-__version__ = '0.0.1'
+__version__ = '0.0.2.dev0'
 
 __all__ = [
     'dqdv',
@@ -36,8 +36,8 @@ def __getattr__(attr):
         import ampworks.ici as ici
         return ici
     elif attr == 'io':
-        import ampworks.io as io
-        return io
+        import ampworks.data as data
+        return data
     elif attr == 'plotutils':
         import ampworks.plotutils as plotutils
         return plotutils
