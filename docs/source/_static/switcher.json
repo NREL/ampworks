@@ -1,0 +1,13 @@
+[
+    {
+        "name": "dev",
+        "version": "0.0.2.dev0",
+        "url": "https://ampworks.readthedocs.io/en/latest/"
+    },
+    {
+        "name": "stable",
+        "version": "0.0.1",
+        "url": "https://ampworks.readthedocs.io/en/stable/",
+        "preferred": true
+    }
+]

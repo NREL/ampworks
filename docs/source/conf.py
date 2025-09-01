@@ -14,6 +14,8 @@ author = 'Corey R. Randall'
 version = amp.__version__
 release = amp.__version__
 
+json_url = 'https://ampworks.readthedocs.io/en/latest/_static/switcher.json'
+
 
 # -- General configuration ---------------------------------------------------
 # https://sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -88,6 +90,11 @@ html_theme_options = {
     'collapse_navigation': True,
     'show_toc_level': 0,
     'pygments_light_style': 'tango',
+    'show_version_warning_banner': True,
+    'switcher': {
+        'json_url': json_url,
+        'version_match': version,
+    }
 }
 
 # -- Options for napoleon ----------------------------------------------------

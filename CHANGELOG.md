@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- Add version warning banner to docs for dev and older releases ([#3](https://github.com/NREL/ampworks/pull/3))
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))
 
 ### Optimizations
@@ -22,4 +23,3 @@ This is the first release of `ampworks`. Main features/capabilities are listed b
 ### Notes
 - Still in development, API likely to change as software matures
 - Documentation available on [Read the Docs](https://ampworks.readthedocs.io/)
-
