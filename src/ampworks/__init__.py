@@ -12,7 +12,7 @@ includes search functionality and more detailed examples.
 
 """
 
-__version__ = '0.0.1'
+__version__ = '0.0.2.dev0'
 
 __all__ = [
     'dqdv',
