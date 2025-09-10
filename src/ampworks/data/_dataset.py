@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 
@@ -26,14 +27,17 @@ class Dataset(pd.DataFrame):
         from ampworks.data._read import read_table
         return read_table(filepath)
 
-    def downsample(self, column: str, *, n: int = None, frac: int = None,
-                   resolution: float = None, inplace: bool = False,
-                   ignore_index: bool = False) -> Dataset:
+    def downsample(
+        self, column: str, *, n: int = None, frac: int = None,
+        resolution: float = None, inplace: bool = False,
+        ignore_index: bool = False, keep_last: bool = False,
+    ) -> Dataset:
 
         if sum(x is not None for x in [n, frac, resolution]) != 1:
             raise ValueError("Specify exactly one of: n, frac, resolution")
 
         df = self.copy()
+        df = df.reset_index(drop=ignore_index)
 
         if n is not None:
             step = max(1, len(df) // n)
@@ -47,21 +51,25 @@ class Dataset(pd.DataFrame):
             mask = [True]  # always keep the first row
             last_val = df[column].iloc[0]
             for val in df[column].iloc[1:]:
-                if val - last_val >= resolution:
+                if np.abs(val - last_val) >= np.abs(resolution):
                     mask.append(True)
                     last_val = val
                 else:
                     mask.append(False)
 
-        result = df[mask]
+        if keep_last:
+            mask[-1] = True
 
-        if ignore_index:
-            result = result.reset_index(drop=True)
+        df = df[mask]
+
+        if not ignore_index:
+            df = df.set_index('index', drop=True)
+            df.index.name = None
 
         if inplace:
-            self.__init__(result)
+            self.__init__(df)
         else:
-            return result
+            return df
 
     def interactive_xy_plot(self, x: str, y: str, tips: list[str],
                             save: str = None) -> None:

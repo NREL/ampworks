@@ -6,12 +6,14 @@ visualizations.
 
 """
 
-from ._colors import ColorMap
+from ._colors import ColorMap, colors_from_size, colors_from_data
 from ._text import add_text
 from ._ticks import minor_ticks, tick_direction, format_ticks
 
 __all__ = [
     'ColorMap',
+    'colors_from_size',
+    'colors_from_data',
     'add_text',
     'minor_ticks',
     'tick_direction',

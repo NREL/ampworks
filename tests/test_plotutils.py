@@ -40,7 +40,7 @@ def test_cmap_get_color():
 def test_cmap_colors_from_size():
 
     size = 5
-    colors = aplt.ColorMap.colors_from_size(size, 'viridis')
+    colors = aplt.colors_from_size(size, 'viridis')
 
     assert isinstance(colors, list)
     assert len(colors) == size
@@ -50,7 +50,7 @@ def test_cmap_colors_from_size():
 def test_cmap_colors_from_data():
 
     data = np.array([[0, 0.5], [0.8, 1]])
-    colors = aplt.ColorMap.colors_from_data(data, 'viridis')
+    colors = aplt.colors_from_data(data, 'viridis')
 
     assert isinstance(colors, np.ndarray)
     assert colors.shape == data.shape
