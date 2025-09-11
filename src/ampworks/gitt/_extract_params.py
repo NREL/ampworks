@@ -5,137 +5,200 @@ import numpy as np
 import pandas as pd
 
 from scipy.stats import linregress
-from scipy.integrate import trapezoid
+from scipy.integrate import cumulative_trapezoid
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ._dataclasses import CellDescription, GITTDataset
+    from ampworks.data import Dataset
 
 
-def extract_params(sign: int, cell: CellDescription, data: GITTDataset,
-                   ref: int = 1) -> pd.DataFrame:
-    """_summary_
+def extract_params(data: Dataset, radius: float, tmin: float = 1,
+                   tmax: float = 60, return_all: bool = False) -> dict:
+    """Extracts parameters from GITT data
+
+    GITT, or galvanostatic intermittent titration technique, is an experiment
+    that applies a low-rate charge or discharge with intermittent current pulses
+    separated by long rest periods that establish equilibrium. These experiments
+    can be used to extract important parameters for physics-based models. For
+    example, the open-circuit voltage and the solid-phase diffusivity.
+
+    The following protocol was used to test this algorithm:
+
+        1. Charge (or discharge) at C/20 for 11 min; include a voltage limit.
+           Log data every 0.2 s or every 5 mV change.
+        2. If upper or lower cutoff voltage was reached during (1), stop.
+        3. Rest for 135 min, then repeat step (1). Log data every 10 min or
+           every 1 mV change.
+
+    The protocol, taken from [1]_, assumes any required formation cycles have
+    already been done. Details of the implementation are available in [2]_.
 
     Parameters
     ----------
-    sign : int
-        The sign of the current pulses to process. Use `-1` for negative pulses
-        (discharging) and `+1` for positive pulses (charging).
-    cell : CellDescription
-        Description of the cell.
-    data : GITTDataset
-        The GITT data to process.
-    ref : int, optional
-        Intercalation fraction reference value. Must be in {0, 1}, enforcing
-        that the lower bound is zero or the upper bound is 1 (default).
+    data : Dataset
+        The sliced GITT data to process. Must have, at a minimum, columns for
+        {'Seconds', 'Amps', 'Volts'}. See notes for more information.
+    radius : float
+        The representative particle radius of your active material (in meters).
+        It's common to use D50 / 2, i.e., the median radius of a distribution.
+    tmin : float, optional
+        The minimum relative pulse time (in seconds) to use when fitting the
+        voltage vs. sqrt(t) for time constants. Defaults to 1.
+    tmax : float, optional
+        The maximum relative pulse time (in seconds) to use when fitting the
+        voltage vs. sqrt(t) for time constants. Defaults to 60. See notes for
+        more important information.
+    return_all : bool, optional
+        If False (default), only the extracted parameters vs. state of charge
+        are returned. If True, also returns stats with info about each pulse.
 
     Returns
     -------
-    params : dict
-        A dictionary of the extracted parameters from each pulse. The keys are
-        `xs [-]` for the intercalation fractions, `Ds [m2/s]` for diffusivity,
-        `i0 [A/m2]` for exchange current density, and `OCV [V]` for the OCV.
-    stats : dict
-        Only returned when 'return_stats' is True. Provides key/value pairs for
-        the number of pulses, average pulse current, and average rest and pulse
-        times.
+    params : pd.DataFrame
+        Table of parameters. Columns include 'SOC' (state of charge, -), 'Ds'
+        (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V).
+    stats : pd.DataFrame
+        Only returned if `return_all=True`. Provides additional stats about
+        each pulse, including errors from the voltage vs. sqrt(t) regressions.
+
+    Raises
+    ------
+    ValueError
+        'data' is missing columns, required=['Seconds', 'Amps', 'Volts'].
+    ValueError
+        'data' should not include both charge and discharge segments.
+
+    Notes
+    -----
+    Rest periods within the dataset are expected to have a current exactly equal
+    to zero. You can use `data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0` if
+    you need to manually zero out currents below some tolerance. This must be
+    done prior to passing in the dataset to this function.
+
+    This algorithm expects charge/discharge currents to be positive/negaitve,
+    respectfully. If your sign convention is opposite this, then the mapping to
+    `soc` in the output will be reversed. You should only process data in one
+    direction at a time. In other words, if you performed the ICI protocol in
+    both the charge and discharge direction you should slice your original data
+    into two separate datasets and call this routine twice.
+
+    The algorithm assumes that voltage vs. `sqrt(t)` is approximately linear.
+    Mathematically this occurs on time scales much less than the time constant
+    `tau = R**2 / D`. Consequently, large `tmax` that violate `tmax << tau`
+    will produce incorrect results. For a more detailed discussion see [2]_.
 
     References
     ----------
-    TODO
+    .. [1] C. R. Randall, N. McKalip, K. E. Fink, A. Verma, A. Singh, A.
+       Mallarapu, P. Weddle, A. Colclasure, "Achieving high rate performance
+       in hybrid pristine-recycled cathodes using model-informed electrode
+       designs," EA, 2025, DOI: TODO
+    .. [2] Z. Geng, Y. Chien, M. J. Lacey, T. Thiringer, and D. Brandell,
+       "Validity of solid-state Li+ diffusion coefficient estimation by
+       electrochemical approaches for lithium-ion batteries," EA, 2022,
+       DOI: 10.1016/j.electacta.2021.139727
 
     """
 
-    # Pull arrays from data
-    time = data.time.copy()
-    current = data.current.copy()
-    voltage = data.voltage.copy()
+    required = ['Seconds', 'Amps', 'Volts']
+    if not any(col in data.columns for col in required):
+        raise ValueError(f"'data' is missing columns, {required=}.")
 
-    # Constants
-    R = 8.314e3  # Gas constant [J/kmol/K]
-    F = 96485.33e3  # Faraday's constant [C/kmol]
+    charging = any(data['Amps'] > 0.)
+    discharging = any(data['Amps'] < 0.)
 
-    # Find pulse indexes
-    if sign == -1:
-        I_pulse = np.mean(current[current < 0.])
-    elif sign == +1:
-        I_pulse = np.mean(current[current > 0.])
-    else:
-        raise ValueError("Invalid 'sign' value, must be in {-1, +1}.")
-
-    start, stop = data.find_pulses(sign)
-
-    if start.size != stop.size:
-        raise ValueError("Size mismatch: The number of detected pulse"
-                         f" starts ({start.size}) and stops ({stop.size})"
-                         " do not agree. This typically occurs due to a"
-                         " missing rest. You will likely need to manually"
-                         " remove affected pulse(s).")
-
-    # OCV
-    Eeq = voltage[start]
-
-    # Diffusivity
-    xs = np.zeros_like(Eeq)
-    for i in range(xs.size):
-        delta_capacity = trapezoid(
-            x=time[start[i]:stop[i] + 1] / 3600.,
-            y=current[start[i]:stop[i] + 1] / cell.mass_AM,
+    if charging and discharging:
+        raise ValueError(
+            "'data' should not include both charge and discharge segments."
         )
 
-        if i == 0:
-            xs[i] = 1.
-        else:
-            xs[i] = xs[i-1] - delta_capacity / cell.spec_capacity_AM
+    df = data.copy()
+    df = df.reset_index(drop=True)
 
-    if ref == 0:
-        xs = xs - xs.min()
-    elif ref == 1:
-        xs = xs - xs.max() + 1
-    else:
-        raise ValueError("Invalid 'ref' value, must be in {0, 1}.")
+    # Check for pre- and post-rest and pad if not present
+    if df['Amps'].iloc[0] != 0.:
+        pass  # TODO
 
-    dEeq_dxs = np.gradient(Eeq, xs)
+    if df['Amps'].iloc[-1] != 0.:
+        pass  # TODO
 
-    dV_droot_t = np.zeros_like(xs)
-    shifts = np.zeros(xs.size, dtype=int)
-    for i in range(xs.size):
+    # States based on current direction: charge, discharge, or rests
+    df['State'] = 'R'
+    df.loc[df['Amps'] > 0, 'State'] = 'C'
+    df.loc[df['Amps'] < 0, 'State'] = 'D'
 
-        j1_target = time[start[i]] + 1.
-        j2_target = time[start[i]] + 10.
-        j_candidates = np.arange(start[i] + 1, time.size)
+    # Add in state-of-charge column to map each value to an SOC
+    Ah = cumulative_trapezoid(
+        df['Amps'].abs(), df['Seconds'] / 3600, initial=0,
+    )
 
-        j1_rel = np.argmin(np.abs(time[j_candidates] - j1_target))
-        j2_rel = np.argmin(np.abs(time[j_candidates] - j2_target))
+    if charging:
+        df['SOC'] = Ah / Ah.max()
+    elif discharging:
+        df['SOC'] = 1 - Ah / Ah.max()
 
-        shift = j_candidates[j1_rel] - start[i]
-        end = j_candidates[j2_rel]
+    # Count each time a rest/charge or rest/discharge changeover occurs
+    rest = (df['State'] != 'R') & (df['State'].shift(fill_value='R') == 'R')
+    df['Pulse'] = rest.cumsum()
 
-        if end - (start[i] + shift) < 10:
-            end += 10
+    # Relative time of each rest/charge or rest/discharge step
+    groups = df.groupby(['Pulse', 'State'])
+    df['Step.t'] = groups['Seconds'].transform(lambda x: x - x.iloc[0])
 
-        t_pulse = time[start[i] + shift:end + 1] - time[start[i]]
-        V_pulse = voltage[start[i] + shift:end + 1]
+    # Remove last cycle if not complete, i.e., ended on charge or discharge
+    if df.iloc[-1]['State'] != 'R':
+        df = df[df['Pulse'] != df['Pulse'].max()].reset_index(drop=True)
 
-        result = linregress(np.sqrt(t_pulse), V_pulse)
+    # Record summary stats for each loop, immediately before the rests
+    groups = df[df['State'] != 'R'].groupby('Pulse', as_index=False)
+    summary = groups.agg(lambda x: x.iloc[0])
 
-        shifts[i] = shift
-        dV_droot_t[i] = result.slope
+    # Store slope and intercepts (V = m*t^0.5 + b) for each rest
+    groups = df.groupby('Pulse')
 
-    Ds = 4./np.pi * (I_pulse*cell.molar_vol_AM / (cell.surf_area_AM*F))**2 \
-        * (dEeq_dxs/dV_droot_t)**2
+    regression = None
+    for idx, g in groups:
 
-    # Exchange current density
-    eta_ct = voltage[start + shifts] - voltage[start]
-    i0 = (R*data.avg_temperature / F) * (I_pulse / (eta_ct*cell.surf_area_AM))
+        if idx > 0:
 
-    # Store outputs
+            rest = g[g['State'] == 'R']
+            pulse = g[g['State'] != 'R']
+
+            dt_rest = rest['Step.t'].max() - rest['Step.t'].min()
+            dt_pulse = pulse['Step.t'].max() - pulse['Step.t'].min()
+
+            pulse = pulse[
+                (pulse['Step.t'] >= tmin) &
+                (pulse['Step.t'] <= tmax)
+            ]
+
+            x = np.sqrt(pulse['Step.t'])
+            y = pulse['Volts']
+
+            result = linregress(x, y)
+            new_row = pd.DataFrame({
+                'Pulse': [idx],
+                'Eeq': [result.intercept],
+                'Eeq_err': [result.intercept_stderr],
+                'dUdrt': [result.slope],
+                'dUdrt_err': [result.stderr],
+                'dt_rest': [dt_rest],
+                'dt_pulse': [dt_pulse],
+            })
+
+            regression = pd.concat([regression, new_row], ignore_index=True)
+
+    stats = pd.merge(summary, regression, on='Pulse')
+    stats['dEdt'] = np.gradient(stats['Volts'], np.cumsum(stats['dt_pulse']))
+
     params = pd.DataFrame({
-        'xs [-]': xs,
-        'Ds [m2/s]': Ds,
-        'i0 [A/m2]': i0,
-        'Eeq [V]': Eeq,
+        'SOC': stats['SOC'],
+        'Ds': 4./9./np.pi * (radius * stats['dEdt']/stats['dUdrt'])**2,
+        'Eeq': stats['Eeq'],
     })
 
-    params.sort_values(by='xs [-]', inplace=True, ignore_index=True)
+    params.sort_values(by='SOC', inplace=True, ignore_index=True)
+
+    if return_all:
+        return params, stats
 
     return params
