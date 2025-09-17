@@ -8,12 +8,13 @@ from scipy.stats import linregress
 from scipy.integrate import cumulative_trapezoid
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ampworks.data import Dataset
+    from ampworks import Dataset
 
 
 def extract_params(data: Dataset, radius: float, tmin: float = 1,
                    tmax: float = 10, return_all: bool = False) -> pd.DataFrame:
-    """Extracts parameters from ICI data
+    """
+    Extracts parameters from ICI data
 
     ICI or incrememtal current interruption is an experiment that interrupts a
     low-rate charge or discharge experiment with short rests. These experiments
@@ -22,13 +23,15 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The following protocol was used to test this algorithm:
 
-        1. Charge (or discharge) at C/10 for 5 min; include a voltage limit.
-           Log data every 30 s or every 5 mV change.
-        2. If upper or lower cutoff voltage was reached during (1), stop.
-        3. Rest for 10 seconds, then repeat step (1). Log data every 0.2 s.
+        1. Rest for 5 min, log data every 10 s.        
+        2. Charge (or discharge) at C/10 for 5 min; include a voltage limit.
+           Log data every 5 s or every 5 mV change.
+        3. Rest for 10 seconds, log data every 0.1 s. 
+        4. Stop if voltage limit reached in (2), otherwise repeat (2) and (3).
 
-    The protocol assumes any required formation cycles have already been done.
-    Details of the implementation are available in [1]_.
+    The protocol assumes any required formation cycles have already been done
+    and that the cell was rested until equilibrium before starting the steps
+    above. Details of the implementation are available in [1]_.
 
     Parameters
     ----------
@@ -52,7 +55,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     -------
     params : pd.DataFrame
         Table of parameters. Columns include 'SOC' (state of charge, -), 'Ds'
-        (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V).
+        (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V). 
     stats : pd.DataFrame
         Only returned if `return_all=True`. Provides additional stats about
         each rest, including errors from the voltage vs. sqrt(t) regressions.
@@ -66,21 +69,23 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     Notes
     -----
-    Rest periods within the dataset are expected to have a current exactly equal
+    Rest periods in the dataset are expected to have currents exactly equal
     to zero. You can use `data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0` if
     you need to manually zero out currents below some tolerance. This must be
     done prior to passing in the dataset to this function.
 
     This algorithm expects charge/discharge currents to be positive/negaitve,
     respectfully. If your sign convention is opposite this, then the mapping to
-    `soc` in the output will be reversed. You should only process data in one
+    `SOC` in the output will be reversed. You should only process data in one
     direction at a time. In other words, if you performed the ICI protocol in
-    both the charge and discharge direction you should slice your original data
+    both charge and discharge directions you should slice your original data
     into two separate datasets and call this routine twice.
 
     The input values of `tmin` and `tmax` assume that rests occur for at least
     10 seconds. If your protocol uses shorter rests you should adjust these
-    accordingly.
+    accordingly. Additionally, if a rest has fewer than two data points between
+    the set relative `tmin` and `tmax` then the linear regression performed to
+    find the diffusivity and equilibrium potential will return `NaN` for both.
 
     References
     ----------
@@ -88,6 +93,15 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
        "Validity of solid-state Li+ diffusion coefficient estimation by
        electrochemical approaches for lithium-ion batteries," EA, 2022,
        DOI: 10.1016/j.electacta.2021.139727
+       
+    Examples
+    --------
+    >>> data = amp.datasets.load_datasets('ici_discharge')
+    >>> params, stats = amp.ici.extract_params(data, 1.8e-6, return_all=True)
+    >>> params.plot('SOC', 'Eeq')
+    >>> params.plot('SOC', 'Ds', logy=True)
+    >>> print(params)
+    >>> print(stats)
 
     """
 
@@ -105,13 +119,6 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     df = data.copy()
     df = df.reset_index(drop=True)
-
-    # Check for pre- and post-rest and pad if not present
-    if df['Amps'].iloc[0] != 0.:
-        pass  # TODO
-
-    if df['Amps'].iloc[-1] != 0.:
-        pass  # TODO
 
     # States based on current direction: charge, discharge, or rests
     df['State'] = 'R'
@@ -165,7 +172,10 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
             x = np.sqrt(rest['Step.t'])
             y = rest['Volts']
-
+            
+            if len(x) <= 1:
+                x, y = [0, 1], [np.nan, np.nan]                
+                
             result = linregress(x, y)
             new_row = pd.DataFrame({
                 'Rest': [idx],

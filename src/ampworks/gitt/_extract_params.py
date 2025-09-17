@@ -8,12 +8,13 @@ from scipy.stats import linregress
 from scipy.integrate import cumulative_trapezoid
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ampworks.data import Dataset
+    from ampworks import Dataset
 
 
 def extract_params(data: Dataset, radius: float, tmin: float = 1,
                    tmax: float = 60, return_all: bool = False) -> dict:
-    """Extracts parameters from GITT data
+    """
+    Extracts parameters from GITT data
 
     GITT, or galvanostatic intermittent titration technique, is an experiment
     that applies a low-rate charge or discharge with intermittent current pulses
@@ -23,14 +24,15 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The following protocol was used to test this algorithm:
 
-        1. Charge (or discharge) at C/20 for 11 min; include a voltage limit.
-           Log data every 0.2 s or every 5 mV change.
-        2. If upper or lower cutoff voltage was reached during (1), stop.
-        3. Rest for 135 min, then repeat step (1). Log data every 10 min or
-           every 1 mV change.
+        1. Rest for 5 min, log data every 10 s.
+        2. Charge (or discharge) at C/20 for 11 min; include a voltage limit.
+           Log data every 0.1 s or every 5 mV change.
+        3. Rest for 135 min, log data every 10 min or every 1 mV change.
+        4. Stop if voltage limit reached in (2), otherwise repeat (2) and (3).
 
-    The protocol, taken from [1]_, assumes any required formation cycles have
-    already been done. Details of the implementation are available in [2]_.
+    The protocol assumes any required formation cycles have already been done
+    and that the cell was rested until equilibrium being starting the steps
+    above. Details of the implementation are available in [1]_.
 
     Parameters
     ----------
@@ -76,7 +78,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     This algorithm expects charge/discharge currents to be positive/negaitve,
     respectfully. If your sign convention is opposite this, then the mapping to
-    `soc` in the output will be reversed. You should only process data in one
+    `SOC` in the output will be reversed. You should only process data in one
     direction at a time. In other words, if you performed the ICI protocol in
     both the charge and discharge direction you should slice your original data
     into two separate datasets and call this routine twice.
@@ -84,18 +86,26 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     The algorithm assumes that voltage vs. `sqrt(t)` is approximately linear.
     Mathematically this occurs on time scales much less than the time constant
     `tau = R**2 / D`. Consequently, large `tmax` that violate `tmax << tau`
-    will produce incorrect results. For a more detailed discussion see [2]_.
+    will produce incorrect results. For a more detailed discussion see [1]_.
+    Additionally, if a pulse has fewer than two data points between the set
+    relative `tmin` and `tmax` then the linear regression performed to find the
+    diffusivity and equilbrium potential will return `NaN` for both.
 
     References
     ----------
-    .. [1] C. R. Randall, N. McKalip, K. E. Fink, A. Verma, A. Singh, A.
-       Mallarapu, P. Weddle, A. Colclasure, "Achieving high rate performance
-       in hybrid pristine-recycled cathodes using model-informed electrode
-       designs," EA, 2025, DOI: TODO
-    .. [2] Z. Geng, Y. Chien, M. J. Lacey, T. Thiringer, and D. Brandell,
+    .. [1] Z. Geng, Y. Chien, M. J. Lacey, T. Thiringer, and D. Brandell,
        "Validity of solid-state Li+ diffusion coefficient estimation by
        electrochemical approaches for lithium-ion batteries," EA, 2022,
        DOI: 10.1016/j.electacta.2021.139727
+       
+    Examples
+    --------
+    >>> data = amp.datasets.load_datasets('gitt_discharge')
+    >>> params, stats = amp.gitt.extract_params(data, 1.8e-6, return_all=True)
+    >>> params.plot('SOC', 'Eeq')
+    >>> params.plot('SOC', 'Ds', logy=True)
+    >>> print(params)
+    >>> print(stats)
 
     """
 
@@ -113,13 +123,6 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     df = data.copy()
     df = df.reset_index(drop=True)
-
-    # Check for pre- and post-rest and pad if not present
-    if df['Amps'].iloc[0] != 0.:
-        pass  # TODO
-
-    if df['Amps'].iloc[-1] != 0.:
-        pass  # TODO
 
     # States based on current direction: charge, discharge, or rests
     df['State'] = 'R'
@@ -173,6 +176,9 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
             x = np.sqrt(pulse['Step.t'])
             y = pulse['Volts']
+            
+            if len(x) <= 1:
+                x, y = [0, 1], [np.nan, np.nan]  
 
             result = linregress(x, y)
             new_row = pd.DataFrame({
