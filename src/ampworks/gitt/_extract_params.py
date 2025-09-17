@@ -17,22 +17,22 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Extracts parameters from GITT data
 
     GITT, or galvanostatic intermittent titration technique, is an experiment
-    that applies a low-rate charge or discharge with intermittent current pulses
-    separated by long rest periods that establish equilibrium. These experiments
-    can be used to extract important parameters for physics-based models. For
-    example, the open-circuit voltage and the solid-phase diffusivity.
+    that applies intermittent low-rate charge or discharge pulses separated by
+    long rest periods that establish equilibrium. The experiments can be used
+    to extract important parameters for physics-based models. For example, the
+    open-circuit voltage and solid-phase diffusivity.
 
     The following protocol was used to test this algorithm:
 
         1. Rest for 5 min, log data every 10 s.
         2. Charge (or discharge) at C/20 for 11 min; include a voltage limit.
-           Log data every 0.1 s or every 5 mV change.
-        3. Rest for 135 min, log data every 10 min or every 1 mV change.
+           Log data every 0.2 s or every 5 mV change.
+        3. Rest for 135 min, log data every 10 min or every 5 mV change.
         4. Stop if voltage limit reached in (2), otherwise repeat (2) and (3).
 
-    The protocol assumes any required formation cycles have already been done
-    and that the cell was rested until equilibrium being starting the steps
-    above. Details of the implementation are available in [1]_.
+    The protocol assumes formation cycles have already been completed and that
+    the cell was rested until equilibrium before starting the steps above.
+    Details of the implementation are available in [1]_.
 
     Parameters
     ----------
@@ -43,12 +43,11 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
         The representative particle radius of your active material (in meters).
         It's common to use D50 / 2, i.e., the median radius of a distribution.
     tmin : float, optional
-        The minimum relative pulse time (in seconds) to use when fitting the
-        voltage vs. sqrt(t) for time constants. Defaults to 1.
+        The minimum relative pulse time (in seconds) to use when fitting sqrt(t)
+        vs. voltage for time constants. Default is 1.
     tmax : float, optional
-        The maximum relative pulse time (in seconds) to use when fitting the
-        voltage vs. sqrt(t) for time constants. Defaults to 60. See notes for
-        more important information.
+        The maximum relative pulse time (in seconds) to use when fitting sqrt(t)
+        vs. voltage for time constants. Default is 60. See notes for more info.
     return_all : bool, optional
         If False (default), only the extracted parameters vs. state of charge
         are returned. If True, also returns stats with info about each pulse.
@@ -60,7 +59,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
         (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V).
     stats : pd.DataFrame
         Only returned if `return_all=True`. Provides additional stats about
-        each pulse, including errors from the voltage vs. sqrt(t) regressions.
+        each pulse, including errors from the sqrt(t) vs. voltage regressions.
 
     Raises
     ------
@@ -71,19 +70,19 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     Notes
     -----
-    Rest periods within the dataset are expected to have a current exactly equal
-    to zero. You can use `data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0` if
+    Rests within the dataset are expected to have a current exactly equal to
+    zero. You can use `data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0` if
     you need to manually zero out currents below some tolerance. This must be
     done prior to passing in the dataset to this function.
 
-    This algorithm expects charge/discharge currents to be positive/negaitve,
-    respectfully. If your sign convention is opposite this, then the mapping to
-    `SOC` in the output will be reversed. You should only process data in one
-    direction at a time. In other words, if you performed the ICI protocol in
-    both the charge and discharge direction you should slice your original data
-    into two separate datasets and call this routine twice.
+    This algorithm expects charge/discharge currents to be positive/negative,
+    respectfully. If your sign convention is the opposite, the mapping to `SOC`
+    in the output will be reversed. You must process data in one direction at
+    a time. In other words, if you performed the GITT protocol in both charge
+    and discharge directions you should slice your data into two datasets and
+    call this routine twice.
 
-    The algorithm assumes that voltage vs. `sqrt(t)` is approximately linear.
+    The algorithm assumes that `sqrt(t)` vs. voltage is approximately linear.
     Mathematically this occurs on time scales much less than the time constant
     `tau = R**2 / D`. Consequently, large `tmax` that violate `tmax << tau`
     will produce incorrect results. For a more detailed discussion see [1]_.
@@ -97,7 +96,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
        "Validity of solid-state Li+ diffusion coefficient estimation by
        electrochemical approaches for lithium-ion batteries," EA, 2022,
        DOI: 10.1016/j.electacta.2021.139727
-       
+
     Examples
     --------
     >>> data = amp.datasets.load_datasets('gitt_discharge')
@@ -176,9 +175,9 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
             x = np.sqrt(pulse['Step.t'])
             y = pulse['Volts']
-            
+
             if len(x) <= 1:
-                x, y = [0, 1], [np.nan, np.nan]  
+                x, y = [0, 1], [np.nan, np.nan]
 
             result = linregress(x, y)
             new_row = pd.DataFrame({
