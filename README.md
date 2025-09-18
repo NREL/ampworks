@@ -15,7 +15,7 @@
 [pep-l]: https://www.python.org/dev/peps/pep-0008
 
 ## Summary
-`ampworks` is a collection of tools designed to process experimental battery data with a focus on model-relevant analyses. It currently provides functions for incremental capacity analysis and GITT data processing, helping extract key properties for life and physics-based models (e.g., SPM and P2D). Some tools, like the incremental capacity analysis module, also include graphical user interfaces for ease of use.
+`ampworks` is a collection of tools designed to visualize and process experimental battery data, with a focus on model-relevant analyses. It provides routines for degradation mode analysis, parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more. These routines provide key properties for life and physics-based models (e.g., SPM and P2D). Graphical user interfaces (GUIs) are available for some of the analyses. See a full list of the GUI-based applications by running `ampworks -h` in your terminal after installation. 
 
 This software is in early development (Alpha), and the API may change as it matures.
 
@@ -26,7 +26,7 @@ This software is in early development (Alpha), and the API may change as it matu
 pip install ampworks[gui]
 ```
 
-Using `[gui]` is optional. When included, the installation will setup extra dependencies that are needed for the graphical user interfaces (GUIs). However, the package is designed such that no features specifically require the GUIs. Without these optional dependencies the package takes up less space on your computer, and will generally install faster.
+Using `[gui]` is optional. When included, the installation includes extra dependencies needed for the GUI-based applications. However, the GUIs are completely optional. Any routines that can accessed through a GUI can also be implemented in scripts or notebooks. The package will generally install faster without the extra dependencies. Note that you can always add the GUI dependencies at a later time too; they do not need to be included with the original installation of `ampworks`.
 
 For those interested in setting up a developer and/or editable version of this software please see the directions available in the "Development" section of our [documentation](https://ampworks.readthedocs.io/en/latest/development).
 

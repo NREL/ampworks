@@ -7,9 +7,10 @@ name = "ampworks"
 readme = "README.md"
 dynamic = ["version"]
 description = "Processing and visualization tools for battery experiments."
-keywords = ["battery", "analysis", "data", "ICA", "dQdV", "GITT"]
+keywords = ["battery", "data", "analysis", "ICA", "dQdV", "GITT", "ICI"]
 requires-python = ">=3.9,<3.14"
-license = { file = "LICENSE" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 authors = [
     { name = "Corey R. Randall" },
     { email = "corey.randall@nrel.gov" },
@@ -21,7 +22,6 @@ maintainers = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -31,10 +31,11 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "scipy >= 1.13",
     "pandas",
+    "plotly",
     "openpyxl",
     "matplotlib",
+    "scipy >= 1.13",
 ]
 
 [project.scripts]

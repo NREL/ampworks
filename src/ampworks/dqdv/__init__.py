@@ -7,14 +7,16 @@ TODO
 from __future__ import annotations
 
 import warnings
+
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 import scipy.optimize as opt
-import scipy.interpolate as interp
-from scipy.signal import savgol_filter
 import matplotlib.pyplot as plt
+import scipy.interpolate as interp
+
+from scipy.signal import savgol_filter
 
 if TYPE_CHECKING:  # pragma: no cover
     import numpy.typing as npt
@@ -67,6 +69,10 @@ class Fitter:
         * The cost_terms list must be a subset of {'voltage', 'dqdv', 'dvdq'}.
           When 'voltage' is included, an iR term is fit in addition to the
           x0/x100 terms. Otherwise, iR is forced towards zero.
+
+        References
+        ----------
+        TODO
 
         """
 
@@ -748,8 +754,8 @@ def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
 
     .. math::
 
-        I = x_{100,neg}Q_{neg} + x_{100,pos}Q_{pos}, \\quad \\quad
-        {\\rm TIL} = 1 - \\frac{I}{I[0]},
+        \\rm Inv = x_{100,neg}Q_{neg} + x_{100,pos}Q_{pos}, \\quad \\quad
+        {\\rm TIL} = 1 - \\frac{\\rm Inv}{\\rm Inv[0]},
 
     where :math:`I` is an array of inventories calculated from the capacities
     :math:`Q` above. The 'offset' output can also sometimes serve as a helpful
@@ -814,16 +820,56 @@ def post_process(capacity: npt.ArrayLike, x: npt.ArrayLike) -> dict:
     return results
 
 
-def run_gui() -> None:
+def run_gui(jupyter_mode: str = 'external', jupyter_height: int = 650) -> None:
     """
     Run a graphical interface for the Fitter class.
+
+    Parameters
+    ----------
+    jupyter_mode : {'external', 'inline'}, optional
+        How to display the application when running inside a jupyter notebook.
+        'external' opens an external web browser (default). 'inline' runs the
+        application inside the notebook.
+    jupyter_height : int, optional
+        Height of the application (in px) when displayed using 'inline'. The
+        default is 650.
 
     Returns
     -------
     None.
 
+    Notes
+    -----
+    This function is only intended for use inside Jupyter Notebooks. You may
+    experience issues if you call it from a normal script, or in an interactive
+    session within some IDEs (e.g., Spyder, PyCharm, IPython, etc.). However,
+    if you're looking for an alternate way to access the GUI without needing to
+    open a Jupyter Notebook, you can use the ``ampworks --app`` command from
+    your terminal.
+
     """
+
+    from ampworks import _in_interactive, _in_notebook
 
     from .gui_files import _gui
 
-    _gui.run()
+    if not isinstance(jupyter_mode, str):
+        raise TypeError("'jupyter_mode' must be type str.")
+    elif jupyter_mode not in ['external', 'inline']:
+        raise ValueError("'jupyter_mode' must be in {'external', 'inline'}.")
+
+    if not isinstance(jupyter_height, int):
+        raise TypeError("'jupyter_height' must be type int.")
+
+    if not _in_notebook():
+        jupyter_mode = 'external'
+
+    if _in_interactive() and not _in_notebook():
+        warnings.warn(
+            "It looks like you're calling `run_gui()` from an interactive"
+            " environment (e.g., Spyder, IPython, etc.). If the GUI fails,"
+            " try calling the function inside a Jupyter Notebook instead."
+            " Or, use the `ampworks --app` command in your terminal."
+        )
+
+    _gui.run(jupyter_mode=jupyter_mode, jupyter_height=jupyter_height)

@@ -49,54 +49,6 @@ class ColorMap:
 
         self._sm = mpl.pyplot.cm.ScalarMappable(cmap=cmap, norm=norm)
 
-    @classmethod
-    def colors_from_size(cls, size: int, cmap: str = 'jet') -> list:
-        """
-        Generate a list of evenly spaced colors from a colormap.
-
-        Parameters
-        ----------
-        size : int
-            Number of colors to generate.
-        cmap : str, optional
-            Name of the matplotlib colormap, by default 'jet'.
-
-        Returns
-        -------
-        colors : list of tuple
-            List of RGBA color tuples.
-
-        """
-
-        colormap = cls(cmap)
-        data = np.linspace(colormap._vmin, colormap._vmax, size)
-
-        return [colormap.get_color(i) for i in data]
-
-    @classmethod
-    def colors_from_data(cls, data: ndarray, cmap: str = 'jet') -> ndarray:
-        """
-        Map an array of values to colors using a normalized colormap.
-
-        Parameters
-        ----------
-        data : ndarray
-            Input numeric array.
-        cmap : str, optional
-            Name of the matplotlib colormap, by default 'jet'.
-
-        Returns
-        -------
-        colors : ndarray
-            Array of RGBA color tuples with the same shape as 'data'.
-
-        """
-
-        colormap = cls(cmap, norm=(data.min(), data.max()))
-        colors = [colormap.get_color(x) for x in data.flatten()]
-
-        return np.fromiter(colors, dtype=object).reshape(data.shape)
-
     def get_color(self, scalar: float) -> tuple:
         """
         Map a scalar value to an RGBA color tuple.
@@ -122,3 +74,51 @@ class ColorMap:
             return self._sm.to_rgba(scalar)
         else:
             raise ValueError("'scalar' is not in bounds set by 'norm'.")
+
+
+def colors_from_size(size: int, cmap: str = 'jet') -> list:
+    """
+    Generate a list of evenly spaced colors from a colormap.
+
+    Parameters
+    ----------
+    size : int
+        Number of colors to generate.
+    cmap : str, optional
+        Name of the matplotlib colormap, by default 'jet'.
+
+    Returns
+    -------
+    colors : list
+        List of RGBA color tuples.
+
+    """
+
+    colormap = ColorMap(cmap)
+    data = np.linspace(colormap._vmin, colormap._vmax, size)
+
+    return [colormap.get_color(i) for i in data]
+
+
+def colors_from_data(data: ndarray, cmap: str = 'jet') -> ndarray:
+    """
+    Map an array of values to colors using a normalized colormap.
+
+    Parameters
+    ----------
+    data : ndarray
+        Input numeric array.
+    cmap : str, optional
+        Name of the matplotlib colormap, by default 'jet'.
+
+    Returns
+    -------
+    colors : ndarray
+        Array of RGBA color tuples with the same shape as 'data'.
+
+    """
+
+    colormap = ColorMap(cmap, norm=(data.min(), data.max()))
+    colors = [colormap.get_color(x) for x in data.flatten()]
+
+    return np.fromiter(colors, dtype=object).reshape(data.shape)
