@@ -33,6 +33,7 @@ dependencies = [
     "numpy",
     "pandas",
     "plotly",
+    "pyarrow",
     "openpyxl",
     "matplotlib",
     "scipy >= 1.13",
