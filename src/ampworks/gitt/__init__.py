@@ -1,6 +1,9 @@
 """
-TODO
+GITT
 ----
+Tools to analyze Galvanostatic Intermittent Titration Technique (GITT) data.
+Includes functions to extract diffusion coefficients and equilibrium potentials
+from experimental measurements.
 
 """
 

@@ -24,11 +24,14 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The following protocol was used to test this algorithm:
 
-        1. Rest for 5 min, log data every 10 s.
-        2. Charge (or discharge) at C/20 for 11 min; include a voltage limit.
-           Log data every 0.2 s or every 5 mV change.
-        3. Rest for 135 min, log data every 10 min or every 5 mV change.
-        4. Stop if voltage limit reached in (2), otherwise repeat (2) and (3).
+    1. Rest for 5 min, log data every 10 s.
+
+    2. Charge (or discharge) at C/20 for 11 min; include a voltage limit. Log
+       data every 0.2 s or every 5 mV change.
+
+    3. Rest for 135 min, log data every 10 min or every 5 mV change.
+
+    4. Stop if voltage limit reached in (2), otherwise repeat (2) and (3).
 
     The protocol assumes formation cycles have already been completed and that
     the cell was rested until equilibrium before starting the steps above.
@@ -58,7 +61,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
         Table of parameters. Columns include 'SOC' (state of charge, -), 'Ds'
         (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V).
     stats : pd.DataFrame
-        Only returned if `return_all=True`. Provides additional stats about
+        Only returned if ``return_all=True``. Provides additional stats about
         each pulse, including errors from the sqrt(t) vs. voltage regressions.
 
     Raises
@@ -71,24 +74,24 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Notes
     -----
     Rests within the dataset are expected to have a current exactly equal to
-    zero. You can use `data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0` if
+    zero. You can use ``data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0`` if
     you need to manually zero out currents below some tolerance. This must be
     done prior to passing in the dataset to this function.
 
     This algorithm expects charge/discharge currents to be positive/negative,
-    respectfully. If your sign convention is the opposite, the mapping to `SOC`
+    respectfully. If your sign convention is the opposite, the mapping to 'SOC'
     in the output will be reversed. You must process data in one direction at
     a time. In other words, if you performed the GITT protocol in both charge
     and discharge directions you should slice your data into two datasets and
     call this routine twice.
 
-    The algorithm assumes that `sqrt(t)` vs. voltage is approximately linear.
+    The algorithm assumes that ``sqrt(t)`` vs. voltage is approximately linear.
     Mathematically this occurs on time scales much less than the time constant
-    `tau = R**2 / D`. Consequently, large `tmax` that violate `tmax << tau`
+    ``tau = R**2 / D``. Consequently, large `tmax` that violate ``tmax << tau``
     will produce incorrect results. For a more detailed discussion see [1]_.
     Additionally, if a pulse has fewer than two data points between the set
-    relative `tmin` and `tmax` then the linear regression performed to find the
-    diffusivity and equilbrium potential will return `NaN` for both.
+    relative ``tmin`` and ``tmax`` then the linear regression performed to find
+    the diffusivity and equilbrium potential will return ``NaN`` for both.
 
     References
     ----------
@@ -109,7 +112,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     """
 
     required = ['Seconds', 'Amps', 'Volts']
-    if not any(col in data.columns for col in required):
+    if not all(col in data.columns for col in required):
         raise ValueError(f"'data' is missing columns, {required=}.")
 
     charging = any(data['Amps'] > 0.)
