@@ -201,7 +201,7 @@ def read_csv(filepath):
 
         if header_matches(line.rstrip('\n').split(','), REQUIRED_HEADERS):
             df = pd.read_csv(filepath, sep=',', skiprows=counter,
-                             engine='python', encoding_errors='ignore')
+                             engine='pyarrow', encoding_errors='ignore')
 
             return standardize_headers(df)
 

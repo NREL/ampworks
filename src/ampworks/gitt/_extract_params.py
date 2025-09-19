@@ -142,8 +142,8 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
         df['SOC'] = 1 - Ah / Ah.max()
 
     # Count each time a rest/charge or rest/discharge changeover occurs
-    rest = (df['State'] != 'R') & (df['State'].shift(fill_value='R') == 'R')
-    df['Pulse'] = rest.cumsum()
+    pulse = (df['State'] != 'R') & (df['State'].shift(fill_value='R') == 'R')
+    df['Pulse'] = pulse.cumsum()
 
     # Relative time of each rest/charge or rest/discharge step
     groups = df.groupby(['Pulse', 'State'])
@@ -153,11 +153,11 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     if df.iloc[-1]['State'] != 'R':
         df = df[df['Pulse'] != df['Pulse'].max()].reset_index(drop=True)
 
-    # Record summary stats for each loop, immediately before the rests
+    # Record summary stats for each loop, immediately before the pulses
     groups = df[df['State'] != 'R'].groupby('Pulse', as_index=False)
     summary = groups.agg(lambda x: x.iloc[0])
 
-    # Store slope and intercepts (V = m*t^0.5 + b) for each rest
+    # Store slope and intercepts (V = m*t^0.5 + b) for each pulse
     groups = df.groupby('Pulse')
 
     regression = None

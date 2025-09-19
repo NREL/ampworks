@@ -6,7 +6,7 @@ import ampworks as amp
 
 @pytest.fixture(scope='module')
 def raw_data():
-    return amp.datasets.load_datasets('ici_discharge')
+    return amp.datasets.load_datasets('gitt_discharge')
 
 
 @pytest.fixture
@@ -18,20 +18,20 @@ def test_extract_params_missing_columns():
 
     data = amp.Dataset({'Seconds': [], 'Volts': []})  # missing 'Amps'
     with pytest.raises(ValueError):
-        _ = amp.ici.extract_params(data, 1.8e-6)
+        _ = amp.gitt.extract_params(data, 1.8e-6)
 
 
 def test_extract_params_charge_discharge(data):
 
     data.loc[0, 'Amps'] = +1  # inject opposite sign
     with pytest.raises(ValueError):
-        _ = amp.ici.extract_params(data, 1.8e-6)
+        _ = amp.gitt.extract_params(data, 1.8e-6)
 
 
 def test_extract_params_basic(data):
 
     # test with discharge data, with return_all=True
-    params, stats = amp.ici.extract_params(data, 1.8e-6, return_all=True)
+    params, stats = amp.gitt.extract_params(data, 1.8e-6, return_all=True)
 
     assert isinstance(params, pd.DataFrame)
     assert {'SOC', 'Ds', 'Eeq'}.issubset(params.columns)
@@ -43,14 +43,15 @@ def test_extract_params_basic(data):
     assert params.notna().values.all()
     assert params['SOC'].is_monotonic_increasing
 
+    # ignore edge effects in diffusivity check, first two points
     assert np.all((params['SOC'] >= 0) & (params['SOC'] <= 1))
-    assert np.all((params['Ds'] < 4e-15) & (params['Ds'] > 1e-16))
+    assert np.all((params['Ds'][2:] < 4e-15) & (params['Ds'][2:] > 1e-16))
     assert np.all((params['Eeq'] >= 3.0) & (params['Eeq'] <= 4.1))
 
     # test with charge data - overwrite "data" fixture
-    data = amp.datasets.load_datasets('ici_charge')
+    data = amp.datasets.load_datasets('gitt_charge')
 
-    params = amp.ici.extract_params(data, 1.8e-6)
+    params = amp.gitt.extract_params(data, 1.8e-6)
 
     assert isinstance(params, pd.DataFrame)
     assert {'SOC', 'Ds', 'Eeq'}.issubset(params.columns)
@@ -59,8 +60,9 @@ def test_extract_params_basic(data):
     assert params.notna().values.all()
     assert params['SOC'].is_monotonic_increasing
 
+    # ignore edge effects in diffusivity check, last two points
     assert np.all((params['SOC'] >= 0) & (params['SOC'] <= 1))
-    assert np.all((params['Ds'] < 4e-15) & (params['Ds'] > 1e-16))
+    assert np.all((params['Ds'][:-2] < 4e-15) & (params['Ds'][:-2] > 1e-16))
     assert np.all((params['Eeq'] >= 3.0) & (params['Eeq'] <= 4.1))
 
 
@@ -70,21 +72,22 @@ def test_extract_params_truncate_last_step(data):
     data.loc[data['Amps'] > 0, 'State'] = 'C'
     data.loc[data['Amps'] < 0, 'State'] = 'D'
 
-    rest = (data['State'] != 'R') & (data['State'].shift(fill_value='R') == 'R')
-    data['Rest'] = rest.cumsum()
+    pulse = (data['State'] != 'R') & (
+        data['State'].shift(fill_value='R') == 'R')
+    data['Pulse'] = pulse.cumsum()
 
     # get first 5 discharge/rest steps, then remove last rest
-    subset = data[data['Rest'] <= 5]
-    last_rest = subset[(subset['Rest'] == 5) & (subset['State'] == 'R')]
+    subset = data[data['Pulse'] <= 5]
+    last_rest = subset[(subset['Pulse'] == 5) & (subset['State'] == 'R')]
     subset = subset.drop(last_rest.index)
 
-    params = amp.ici.extract_params(subset, 1.8e-6)
+    params = amp.gitt.extract_params(subset, 1.8e-6)
 
     assert params.shape[0] == 4  # one less than 5 b/c incomplete step cut off
     assert params.notna().values.all()  # shouldn't have NaN for complete steps
 
 
-def test_extract_params_rest_not_in_twindow(data):
+def test_extract_params_partial_rest(data):
     # if tmin and tmax are set such that the number of points is less than two
     # then the linear regression cannot be performed and NaN is returned
 
@@ -92,18 +95,19 @@ def test_extract_params_rest_not_in_twindow(data):
     data.loc[data['Amps'] > 0, 'State'] = 'C'
     data.loc[data['Amps'] < 0, 'State'] = 'D'
 
-    rest = (data['State'] != 'R') & (data['State'].shift(fill_value='R') == 'R')
-    data['Rest'] = rest.cumsum()
+    pulse = (data['State'] != 'R') & (
+        data['State'].shift(fill_value='R') == 'R')
+    data['Pulse'] = pulse.cumsum()
 
-    # get first 5 pulse/rest steps, then make last rest points all < tmin=1
-    subset = data[data['Rest'] <= 5]
+    # get first 5 pulse/rest steps, then make last pulse points all < tmin=1
+    subset = data[data['Pulse'] <= 5]
 
-    last = subset[(subset['Rest'] == 5) & (subset['State'] == 'R')]
+    last = subset[(subset['Pulse'] == 5) & (subset['State'] != 'R')]
     tmin_limit = last[last['Seconds'] - last['Seconds'].iloc[0] > 1]
 
     subset = subset.drop(tmin_limit.index)
 
-    params = amp.ici.extract_params(subset, 1.8e-6)
+    params = amp.gitt.extract_params(subset, 1.8e-6)
 
     assert params.shape[0] == 5
 

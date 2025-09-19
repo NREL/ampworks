@@ -33,6 +33,7 @@ dependencies = [
     "numpy",
     "pandas",
     "plotly",
+    "pyarrow",
     "openpyxl",
     "matplotlib",
     "scipy >= 1.13",
@@ -48,7 +49,7 @@ version = { attr = "ampworks.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.ico", "*.css", "*.csv"]
+"*" = ["*.yaml", ".yml", "*.csv", "*.css"]
 
 [project.optional-dependencies]
 gui = [
