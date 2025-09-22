@@ -141,22 +141,33 @@ myst_enable_extensions = ['amsmath', 'dollarmath']
 # pandas documentation for this. The following provides a list of which methods
 # to keep in the ampworks documentation. The rest is excluded.
 
-keep = [
+dataset_keep = [
     'from_csv',
     'from_excel',
     'from_table',
     'interactive_xy_plot',
 ]
 
+progbar_keep = [
+    'reset',
+    'set_progress',
+]
+
 
 def skip_util_classes(app, what, name, obj, skip, options):
+    
+    what_kind = ['method', 'attribute', 'property']
+                    
+    if what in what_kind and '.Dataset.' in name:
+        if name.split('.')[-1] not in dataset_keep:
+            skip = True
             
-    if what in ['method', 'attribute', 'property'] and '.Dataset.' in name:
-        if name.split('.')[-1] not in keep:
+    elif what in what_kind and '.ProgressBar.' in name:
+        if name.split('.')[-1] not in progbar_keep:
             skip = True
             
     return skip
-
+            
 
 def setup(sphinx):
    sphinx.connect('autoapi-skip-member', skip_util_classes)

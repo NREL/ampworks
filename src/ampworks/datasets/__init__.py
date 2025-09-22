@@ -1,6 +1,17 @@
 """
-TODO
-----
+This module provides access to example datasets bundled with ``ampworks``. The
+available functions allow users to list, download, or load in example datasets.
+The datasets are used in tutorials and tests. They provide a convenient intro
+to package functions without the overhead of requiring users to perform their
+own experiments.
+
+Most datasets were created using physics-based models like the pseudo-2D model.
+A brief description of each dataset is given below:
+
+1. ``gitt_charge`` - example GITT data (using charge/rest sequences)
+2. ``gitt_discharge`` - example GITT data (using discharge/rest sequences)
+3. ``ici_charge`` - example ICI data (using charge/rest sequences)
+4. ``ici_discharge`` - example ICI data (using discharge/rest sequences)
 
 """
 
@@ -22,11 +33,35 @@ __all__ = [
 
 
 def list_datasets() -> list[str]:
+    """
+    List names of available example datasets.
+
+    Returns
+    -------
+    names : list[str]
+        A list of example file names from an internal ``resources`` folder.
+
+    """
     resources = pathlib.Path(os.path.dirname(__file__), 'resources')
     return os.listdir(resources)
 
 
 def download_all(path: str | None = None) -> None:
+    """
+    Copy example datasets into a local directory.
+
+    Parameters
+    ----------
+    path : str or None, optional
+        Path to parent directory where a new ``ampworks_datasets`` folder will
+        be created and example datasets will be copied to. If None (default),
+        the current working directory is used.
+
+    Returns
+    -------
+    None.
+
+    """
 
     resources = pathlib.Path(os.path.dirname(__file__), 'resources')
 
@@ -41,6 +76,26 @@ def download_all(path: str | None = None) -> None:
 
 
 def load_datasets(*names: str) -> Dataset:
+    """
+    Load example datasets by name.
+
+    Parameters
+    ----------
+    *names : str
+        One or more dataset names to load.
+
+    Returns
+    -------
+    datasets : Dataset or tuple[Dataset]
+        A single dataset if one name, otherwise a tuple of datasets in the same
+        order as the given ``names``.
+
+    Raises
+    ------
+    ValueError
+        Requested dataset is not available.
+
+    """
     from ampworks import read_csv
 
     available = list_datasets()
