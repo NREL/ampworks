@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- Add `utils` subpackage with a handful of basic utilities ([#7](https://github.com/NREL/ampworks/pull/7))
 - New `ici` and `datasets` modules, and `Dataset` class... needs tests ([#4](https://github.com/NREL/ampworks/pull/4))
 - Add version warning banner to docs for dev and older releases ([#3](https://github.com/NREL/ampworks/pull/3))
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))
