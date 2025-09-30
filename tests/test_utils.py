@@ -100,8 +100,13 @@ def test_RichResult():
 
     new = NewResult(second=None, first=None)
     ordered = OrderedResult(second=None, first=None)
-    assert new.__dict__ == ordered.__dict__
+    assert new == ordered
     assert repr(new) != repr(ordered)
+    assert dir(ordered) == sorted(ordered.keys())
+
+    copy = ordered.copy()
+    assert isinstance(copy, amp.utils.RichResult)
+    assert (copy == ordered) and not (copy is ordered)
 
 
 def test_format_float_10():

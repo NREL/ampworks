@@ -1,19 +1,20 @@
 import dash
 import numpy as np
 import pandas as pd
-from dash import dcc, html, Output, Input, State
-from scipy._lib._util import _RichResult as RichResult
 
+from dash import dcc, html, Output, Input, State
+
+from ampworks.utils import RichResult
 from ampworks.dqdv.gui_files.pages.figures import figure_div
 from ampworks.dqdv.gui_files.pages.components import (
-    sliders, optimize_btns, page_spinner, terminal, logging_btns, log_toast,
+    sliders, optimize_btns, page_spinner, terminal, logging_btns,
     download, logging_table,
 )
 
 dash.register_page(
     __name__,
-    path='/dqv-analysis',
-    title='DVQ Analysis',
+    path='/dqdv-fitting',
+    title='dQdV Fitting',
     page_components=[
         figure_div,
         sliders,
@@ -21,7 +22,6 @@ dash.register_page(
         page_spinner,
         terminal,
         logging_btns,
-        log_toast,
         download,
         logging_table,
     ],
@@ -38,31 +38,32 @@ layout = html.Div()
     Input('summary-store', 'data'),
 )
 def update_terminal(summary):
-    if summary:
-        summary['message'] = f"'{summary.get('message', 'Done searching.')}'"
-        summary['success'] = summary.get('success', True)
-        summary['x'] = np.round(summary['x'], 10)
-        summary['niter'] = summary.get('niter')
-        summary['x_map'] = summary.pop('x_map')
-        result = RichResult(**summary)
-    else:
-        result = RichResult({
+    if not summary:
+        summary = {
             'message': None,
             'success': None,
-            'fun': None,
-            'x': None,
             'nfev': None,
             'niter': None,
-            'x_map': ['x0_neg', 'x100_neg', 'x0_pos', 'x100_pos', 'iR'],
-        })
+            'fun': None,
+            'x': None,
+            'x_std': None,
+            'x_map': ['xn0', 'xn1', 'xp0', 'xp1', 'iR'],
+        }
 
-    return f"```python\n{result!r}\n```"
+    if summary['x'] is not None:
+        summary['x'] = np.array(summary['x'])
+
+    if summary['x_std'] is not None:
+        x_std = [np.nan if std is None else std for std in summary['x_std']]
+        summary['x_std'] = np.array(x_std)
+
+    formatted = RichResult(**summary)
+
+    return f"```text\n{formatted!r}\n```"
 
 
 @dash.callback(
     Output('ag-grid', 'rowData'),
-    Output('log-toast', 'is_open'),
-    Output('log-toast', 'children'),
     Input('add-row-btn', 'n_clicks'),
     State('ag-grid', 'rowData'),
     State('summary-store', 'data'),
@@ -70,15 +71,14 @@ def update_terminal(summary):
     prevent_initial_call=True,
 )
 def log_new_row(_, current_data, summary, filename):
+
+    print(current_data)
+
     if not current_data:
         current_data = []
 
     if not summary:
-        return current_data, dash.no_update, dash.no_update
-
-    if 'iR' not in summary['x_map']:
-        summary['x'] = np.hstack([summary['x'], 0.])
-        summary['x_map'].append('iR')
+        return current_data
 
     new_row = dict((k, v) for k, v in zip(summary['x_map'], summary['x']))
     new_row['fun'] = summary['fun']
@@ -87,7 +87,7 @@ def log_new_row(_, current_data, summary, filename):
 
     current_data.append(new_row)
 
-    return current_data, True, filename + ' added to log.'
+    return current_data
 
 
 @dash.callback(

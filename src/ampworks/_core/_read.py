@@ -4,36 +4,45 @@ import pandas as pd
 
 
 # Define expected headers and their aliases
-def format_alias(name: str, unit: str) -> str:
-    return f"{name}.{unit}".removeprefix('.')
+def format_alias(names: str, units: str) -> str:
+
+    aliases = units.copy()  # units only
+
+    for n in names:
+        aliases.append(f"{n}")  # name only
+
+        for u in units:
+            aliases.append(f"{n}.{u}")  # name.units
+
+    return aliases
 
 
-t_names = ['', 't', 'time', 'testtime']
+t_names = ['t', 'time', 'testtime']
 t_units = ['s', 'sec', 'seconds', 'min', 'minutes', 'h', 'hrs', 'hours']
 
-v_names = ['', 'voltage', 'potential', 'ecell']
+v_names = ['voltage', 'potential', 'ecell']
 v_units = ['v', 'volts']
 
-i_names = ['', 'i', 'amperage', 'current']
+i_names = ['i', 'amperage', 'current']
 i_units = ['a', 'amps', 'ma', 'milliamps']
 
-q_names = ['', 'capacity']
+q_names = ['capacity']
 q_units = ['ah', 'ahr', 'amphr', 'mah', 'mahr', 'mamphr']
 
-e_names = ['', 'energy']
+e_names = ['energy']
 e_units = ['wh', 'whr', 'watthr']
 
 HEADER_ALIASES = {
-    'Seconds': [format_alias(n, u) for n in t_names for u in t_units],
-    'Volts': [format_alias(n, u) for n in v_names for u in v_units],
-    'Amps': [format_alias(n, u) for n in i_names for u in i_units],
+    'Seconds': format_alias(t_names, t_units),
+    'Volts': format_alias(v_names, v_units),
+    'Amps': format_alias(i_names, i_units),
 
     'Cycle': ['cycle', 'cyc', 'cyclec', 'cyclep', 'cycleindex', 'cyclenumber'],
     'Step': ['step', 'ns', 'stepindex'],
     'State': ['state', 'md'],
 
-    'Ah': [format_alias(n, u) for n in q_names for u in q_units],
-    'Wh': [format_alias(n, u) for n in e_names for u in e_units],
+    'Ah': format_alias(q_names, q_units),
+    'Wh': format_alias(e_names, e_units),
 
     'DateTime': ['datetime', 'dpttime'],
 }
@@ -108,24 +117,33 @@ def standardize_headers(data):
 
     # Create 'State' data if not present
     if ('State' not in df.columns) and ('Amps' in df.columns):
-        df.loc[df['Amps'].astype(float) == 0, 'State'] = 'R'
-        df.loc[df['Amps'].astype(float) > 0, 'State'] = 'C'
-        df.loc[df['Amps'].astype(float) < 0, 'State'] = 'D'
+        df['Amps'] = df['Amps'].astype(float)
 
-    # Create 'Ah' and 'Wh' data from separate charge and discharge columns
-    if any(header not in df.columns for header in ['Ah', 'Wh']):
-        Q_headers = ['charge' + Q_header for Q_header in HEADER_ALIASES['Ah']]
-        E_headers = ['charge' + E_header for E_header in HEADER_ALIASES['Wh']]
-        for header in data.columns:
-            h2 = strip_chars(header)
+        df['State'] = 'R'
+        df.loc[df['Amps'] > 0, 'State'] = 'C'
+        df.loc[df['Amps'] < 0, 'State'] = 'D'
+
+    # Guarantee sign 'Amps' sign convention (+ charge, - discharge)
+    if 'State' in df.columns:
+        df['Amps'] = df['Amps'].astype(float)
+
+        sign = df['State'].map({'R': 0., 'C': +1, 'D': -1}).fillna(1)
+        df['Amps'] = sign*df['Amps'].abs()
+
+    # Create 'Ah' and 'Wh' from separate charge and discharge columns
+    if any(h not in df.columns for h in ['Ah', 'Wh']):
+        Q_headers = ['charge' + h for h in HEADER_ALIASES['Ah']]
+        E_headers = ['charge' + h for h in HEADER_ALIASES['Wh']]
+        for h1 in data.columns:
+            h2 = strip_chars(h1)
             if h2 in Q_headers:
-                df['Ah'] = data[header]
-                df.loc[df['State'] == 'D', 'Ah'] = data[header.replace(
-                    'Charge', 'Discharge')]
+                df['Ah'] = data[h1]
+                discharge_Ah = data[h1.replace('Charge', 'Discharge')]
+                df.loc[df['State'] == 'D', 'Ah'] = discharge_Ah
             if h2 in E_headers:
-                df['Wh'] = data[header]
-                df.loc[df['State'] == 'D', 'Wh'] = data[header.replace(
-                    'Charge', 'Discharge')]
+                df['Wh'] = data[h1]
+                discharge_Wh = data[h1.replace('Charge', 'Discharge')]
+                df.loc[df['State'] == 'D', 'Wh'] = discharge_Wh
 
     # Final data typing and check to see which headers may still be missing
     for std_header in HEADER_ALIASES.keys():
@@ -151,16 +169,13 @@ def read_table(filepath):
 
     datafile = open(filepath, encoding='latin1')
 
-    counter = 0
-    for line in datafile:
+    for idx, line in enumerate(datafile):
 
-        if header_matches(line.split('\t'), REQUIRED_HEADERS):
-            df = pd.read_csv(filepath, sep='\t', skiprows=counter,
-                             engine='python', encoding_errors='ignore')
+        if header_matches(line.rstrip('\n').split('\t'), REQUIRED_HEADERS):
+            df = pd.read_csv(filepath, sep='\t', skiprows=idx,
+                             encoding_errors='ignore')
 
             return standardize_headers(df)
-
-        counter += 1
 
     print(f"No valid headers found in {filepath}")
 
@@ -196,15 +211,12 @@ def read_csv(filepath):
 
     datafile = open(filepath, encoding='latin1')
 
-    counter = 0
-    for line in datafile:
+    for idx, line in enumerate(datafile):
 
         if header_matches(line.rstrip('\n').split(','), REQUIRED_HEADERS):
-            df = pd.read_csv(filepath, sep=',', skiprows=counter,
-                             engine='pyarrow', encoding_errors='ignore')
+            df = pd.read_csv(filepath, sep=',', skiprows=idx, engine='pyarrow',
+                             encoding_errors='ignore')
 
             return standardize_headers(df)
-
-        counter += 1
 
     print(f"No valid headers found in {filepath}")
