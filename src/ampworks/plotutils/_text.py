@@ -6,7 +6,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def add_text(ax: Axes, xloc: float, yloc: float, text: str,
-             ha: str = 'center', va: str = 'center') -> None:
+             ha: str = 'left', va: str = 'center') -> None:
     """
     Add text to ax at a given location.
 
@@ -22,7 +22,7 @@ def add_text(ax: Axes, xloc: float, yloc: float, text: str,
         Text string to add to figure.
     ha : str, optional
         Horizontal alignment relative to (xloc, yloc). Must be in {'left',
-        'center', 'right'}. By default 'center'.
+        'center', 'right'}. By default 'left'.
     va : str, optional
         Vertical alignment relative to (xloc, yloc). Must be in {'baseline',
         'bottom', 'center', 'center_baseline', 'top'}. By default 'center'.

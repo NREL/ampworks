@@ -3,12 +3,10 @@ import dash_bootstrap_components as dbc
 from dash import html, Output, Input, State, clientside_callback
 
 # Branding
-PLOTLY_LOGO = 'https://images.plot.ly/logo/new-branding/plotly-logomark.png'
-
 brand_logo = html.Div(
     [
-        html.Img(src=PLOTLY_LOGO, height='30px'),
-        html.P(children='Logo', className='mx-3 my-auto',
+        html.Img(src='/assets/logo.png', height='50px'),
+        html.P(children='ampworks', className='mx-2 my-auto',
                style={'fontSize': '1.75em', 'fontWeight': 'bold'}),
     ],
     style={'height': '4em'},
@@ -50,17 +48,17 @@ user_guide = dbc.NavLink(
     children='User Guide',
 )
 
-dvq_analysis = dbc.NavLink(
+dqdv_fitting = dbc.NavLink(
     active='exact',
-    href='/dqv-analysis',
-    children='DVQ Analysis',
+    href='/dqdv-fitting',
+    children='dQdV Fitting',
     class_name='nav-link-bottom',
 )
 
 navlinks = dbc.Nav(
     [
         user_guide,
-        dvq_analysis,
+        dqdv_fitting,
     ],
 )
 

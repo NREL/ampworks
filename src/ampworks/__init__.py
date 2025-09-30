@@ -31,19 +31,21 @@ __all__ = [
     'dqdv',
     'utils',
     'datasets',
+    'mathutils',
     'plotutils',
     '_in_interactive',
     '_in_notebook',
 ]
 
 
-# Lazily load submodules
+# Lazily load submodules/subpackages
 _lazy_modules = {
     'ici': 'ampworks.ici',
     'gitt': 'ampworks.gitt',
     'dqdv': 'ampworks.dqdv',
     'utils': 'ampworks.utils',
     'datasets': 'ampworks.datasets',
+    'mathutils': 'ampworks.mathutils',
     'plotutils': 'ampworks.plotutils',
 }
 

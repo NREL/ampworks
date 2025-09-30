@@ -20,7 +20,7 @@
     --header-bg: #222832;
     --sidebar-bg: #222832;
     --text-color: #f8f9fa;
-    --amp-primary: #34a7bb;
+    --amp-primary: #0a7d91;
     --amp-primary-rgb: 52, 167, 187;
     --amp-secondary: #9c5ffd;
     --amp-secondary-rgb: 156, 95, 253;
@@ -220,10 +220,6 @@
 .upload-btn-active {
     background-color: var(--hr-color) !important;
     box-shadow: 0 0 3px 3px var(--bs-success) !important;
-}
-
-.upload-btn-reject {
-    box-shadow: 0 0 3px 3px var(--bs-danger) !important;
 }
 
 /* Markdown blocks */

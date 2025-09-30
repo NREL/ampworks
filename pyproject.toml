@@ -37,6 +37,7 @@ dependencies = [
     "pyarrow",
     "openpyxl",
     "matplotlib",
+    "numdifftools",
     "scipy >= 1.13",
 ]
 

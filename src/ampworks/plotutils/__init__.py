@@ -7,6 +7,7 @@ visualizations.
 """
 
 from ._colors import ColorMap, colors_from_size, colors_from_data
+from ._limits import focused_limits
 from ._text import add_text
 from ._ticks import minor_ticks, tick_direction, format_ticks
 
@@ -14,6 +15,7 @@ __all__ = [
     'ColorMap',
     'colors_from_size',
     'colors_from_data',
+    'focused_limits',
     'add_text',
     'minor_ticks',
     'tick_direction',

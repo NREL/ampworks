@@ -5,19 +5,15 @@ import dash
 import numpy as np
 import pandas as pd
 import ampworks as amp
-import plotly.io as pio
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 from dash import dcc, html, Output, Input, State
-from dash_bootstrap_templates import load_figure_template
 
 from ampworks.dqdv.gui_files.pages.figures import figure, placeholder_fig
 
-fitter = amp.dqdv.Fitter()
+fitter = amp.dqdv.DqdvFitter()
 optimal_params = False
-
-load_figure_template(['bootstrap', 'bootstrap_dark'])
 
 
 def file_upload(label, identifier):
@@ -40,8 +36,7 @@ def file_upload(label, identifier):
         multiple=False,
         className='upload-btn',
         className_active='upload-btn-active',
-        className_reject='upload-btn-reject',
-        accept='.csv, text/csv, application/csv',
+        accept='.csv,text/csv,application/csv',
         style={
             'width': '80%',
             'height': '3em',
@@ -116,28 +111,19 @@ def switch_input(id, value):
 
 
 opt_data = {
-    'smoothing': 10,
     'xmin-bnd-neg': 0.1,
     'xmax-bnd-neg': 0.1,
     'xmin-bnd-pos': 0.1,
     'xmax-bnd-pos': 0.1,
-    'coarse-Nx': 11,
+    'grid-Nx': 11,
     'max-iter': 1e5,
-    'xtol': 1e-9,
+    'xtol': 1e-8,
     'voltage': True,
     'dqdv': True,
     'dvdq': True,
 }
 
 optimize = html.Div([
-    dbc.Label('Model Parameters', class_name='bold-label'),
-    html.Hr(className='m-0'),
-    dbc.Row([
-        dbc.Col(dbc.Label('Smoothing')),
-        number_input('smoothing', 3, 25, 1,
-                     opt_data['smoothing'], debounce=True),
-    ], style={'width': '90%', 'margin': '5px auto'}),
-
     dbc.Label('Negative Electrode', class_name='bold-label'),
     html.Hr(className='m-0'),
     dbc.Row([
@@ -163,8 +149,8 @@ optimize = html.Div([
     dbc.Label('Fitting Parameters', class_name='bold-label'),
     html.Hr(className='m-0'),
     dbc.Row([
-        dbc.Col(dbc.Label('Coarse Nx')),
-        number_input('coarse-Nx', 11, 51, 1, opt_data['coarse-Nx']),
+        dbc.Col(dbc.Label('Grid Nx')),
+        number_input('grid-Nx', 11, 51, 1, opt_data['grid-Nx']),
     ], style={'width': '90%', 'margin': '5px auto'}),
     dbc.Row([
         dbc.Col(dbc.Label('Max Iterations')),
@@ -417,22 +403,20 @@ dash.clientside_callback(
     prevent_initial_call=True,
 )
 
+
 # Support functions
-
-
 def make_figure(params, flags, new_data=False):
 
     if new_data and all(flags.values()):
-        output = fitter.err_terms(params, full_output=True)
+        output = fitter.err_terms(params)
 
         x = output['soc']
-        xm = output['soc_mid']
 
-        y1d = output['V_dat']
-        y2d = output['dqdv_dat']
-        y3d = output['dvdq_dat']
+        y1d = output['volt_data']
+        y2d = output['dqdv_data']
+        y3d = output['dvdq_data']
 
-        y1f = output['V_fit']
+        y1f = output['volt_fit']
         y2f = output['dqdv_fit']
         y3f = output['dvdq_fit']
 
@@ -446,17 +430,17 @@ def make_figure(params, flags, new_data=False):
         fit = dict(mode='lines', name='Model', showlegend=False, line=ln)
 
         figure.add_trace(go.Scatter(x=x, y=y1d, **dat), row=1, col=1)
-        figure.add_trace(go.Scatter(x=xm, y=y2d, **dat), row=1, col=2)
-        figure.add_trace(go.Scatter(x=xm, y=y3d, **dat), row=1, col=3)
+        figure.add_trace(go.Scatter(x=x, y=y2d, **dat), row=1, col=2)
+        figure.add_trace(go.Scatter(x=x, y=y3d, **dat), row=1, col=3)
 
         figure.add_trace(go.Scatter(x=x, y=y1f, **fit), row=1, col=1)
-        figure.add_trace(go.Scatter(x=xm, y=y2f, **fit), row=1, col=2)
-        figure.add_trace(go.Scatter(x=xm, y=y3f, **fit), row=1, col=3)
+        figure.add_trace(go.Scatter(x=x, y=y2f, **fit), row=1, col=2)
+        figure.add_trace(go.Scatter(x=x, y=y3f, **fit), row=1, col=3)
 
     elif all(flags.values()):
-        output = fitter.err_terms(params, full_output=True)
+        output = fitter.err_terms(params)
 
-        figure.data[3].y = output['V_fit']
+        figure.data[3].y = output['volt_fit']
         figure.data[4].y = output['dqdv_fit']
         figure.data[5].y = output['dvdq_fit']
 
@@ -488,7 +472,7 @@ def upload_data(contents_list, neg_s, pos_s, flags):
         _, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
 
-        setattr(fitter, 'df_' + key, pd.read_csv(io.BytesIO(decoded)))
+        setattr(fitter, key, pd.read_csv(io.BytesIO(decoded)))
         flags[key] = True
 
     params = np.array(neg_s + pos_s)
@@ -508,21 +492,6 @@ def upload_data(contents_list, neg_s, pos_s, flags):
 def show_filename(filename, style):
     new_style = {**style, 'display': 'flex'}
     return f"{filename}", new_style
-
-
-@dash.callback(
-    Output('figure-div', 'figure', allow_duplicate=True),
-    Input({'type': 'opt', 'index': 'smoothing'}, 'value'),
-    State('neg-slider', 'value'),
-    State('pos-slider', 'value'),
-    State('flags', 'data'),
-    prevent_initial_call=True,
-)
-def update_on_smoothing(smoothing, neg_s, pos_s, flags):
-    fitter.smoothing = smoothing
-    params = np.array(neg_s + pos_s)
-    figure = make_figure(params, flags)
-    return figure
 
 
 @dash.callback(
@@ -556,7 +525,7 @@ def update_on_slider(neg_s, pos_s, flags):
     Output('neg-slider', 'value', allow_duplicate=True),
     Output('pos-slider', 'value', allow_duplicate=True),
     Output('summary-store', 'data'),
-    Input('coarse-btn', 'n_clicks'),
+    Input('grid-btn', 'n_clicks'),
     Input('min-err-btn', 'n_clicks'),
     State('neg-slider', 'value'),
     State('pos-slider', 'value'),
@@ -569,15 +538,16 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
 
     trigger = dash.callback_context.triggered[0]['prop_id'].split('.')[0]
 
-    fitter.xtol = opt_data['xtol']
-    fitter.maxiter = opt_data['max-iter']
-    fitter.smoothing = opt_data['smoothing']
-    fitter.bounds = [
-        opt_data['xmin-bnd-neg'],
-        opt_data['xmax-bnd-neg'],
-        opt_data['xmin-bnd-pos'],
-        opt_data['xmax-bnd-pos'],
-    ]
+    options = {
+        'xtol': opt_data['xtol'],
+        'maxiter': opt_data['max-iter'],
+        'bounds': [
+            opt_data['xmin-bnd-neg'],
+            opt_data['xmax-bnd-neg'],
+            opt_data['xmin-bnd-pos'],
+            opt_data['xmax-bnd-pos'],
+        ],
+    }
 
     cost_terms = []
     if opt_data['voltage']:
@@ -590,12 +560,12 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
     fitter.cost_terms = cost_terms
 
     summary = {}
-    if trigger == 'coarse-btn' and _c and all(flags.values()):
-        summary = fitter.coarse_search(opt_data['coarse-Nx'])
+    if trigger == 'grid-btn' and _c and all(flags.values()):
+        summary = fitter.grid_search(opt_data['grid-Nx'])
         params = summary['x']
     elif trigger == 'min-err-btn' and all(flags.values()):
         x0 = np.array(neg_s + pos_s)
-        summary = fitter.constrained_fit(x0)
+        summary = fitter.constrained_fit(x0, **options)
         params = summary['x']
     else:
         params = np.array(neg_s + pos_s)
@@ -603,11 +573,8 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
     optimal_params = params.copy()
 
     if summary:
-        neg_s[0] = round(summary['x'][0], 2)
-        neg_s[1] = round(summary['x'][1], 2)
-
-        pos_s[0] = round(summary['x'][2], 2)
-        pos_s[1] = round(summary['x'][3], 2)
+        x = np.round(summary['x'], 2)
+        neg_s, pos_s = list(x[:2]), list(x[2:])
 
     return '', neg_s, pos_s, summary
 
@@ -619,23 +586,35 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
     prevent_initial_call=True,
 )
 def toggle_theme_switch(switch_on, flags):
-    if switch_on:
+    if switch_on:  # light mode
+        bg_color = 'white'
+        font_color = '#212529'
         border_color = '#212529'
-        template = pio.templates['bootstrap']
-    else:
-        border_color = '#DEE2E6'
-        template = pio.templates['bootstrap_dark']
+    else:          # dark mode
+        bg_color = '#212529'
+        font_color = '#f8f9fa'
+        border_color = '#f8f9fa'
 
-    figure.update_layout(template=template)
+    figure.update_layout(
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font=dict(color=font_color),
+        xaxis=dict(showgrid=False, showline=True),
+        yaxis=dict(showgrid=False, showline=True),
+    )
 
     for i in range(3):
         figure.update_xaxes(
             row=1, col=i+1,
-            linecolor=border_color, tickcolor=border_color,
+            tickcolor=border_color,
+            linecolor=border_color,
+            mirror='allticks',
         )
         figure.update_yaxes(
             row=1, col=i+1,
-            linecolor=border_color, tickcolor=border_color,
+            tickcolor=border_color,
+            linecolor=border_color,
+            mirror='allticks',
         )
 
     if all(flags.values()):

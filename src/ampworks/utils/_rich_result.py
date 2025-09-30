@@ -4,10 +4,13 @@ import numpy as np
 
 
 # RichResult and its formatters are modified copies from scipy._lib._util
-class RichResult:
+class RichResult(dict):
     """Output container with pretty printing."""
 
     _order_keys = []
+
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
 
     def __init__(self, **kwargs):
         """
@@ -80,6 +83,12 @@ class RichResult:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as e:
+            raise AttributeError(name) from e
+
     def __repr__(self):
         order_keys = getattr(self, '_order_keys')
 
@@ -92,10 +101,27 @@ class RichResult:
         def sorter(d):
             return sorted(d.items(), key=key)
 
-        if self.__dict__.keys():
-            return '\n' + _format_dict(self.__dict__, sorter=sorter) + '\n'
+        if self.keys():
+            return '\n' + _format_dict(self, sorter=sorter) + '\n'
         else:
             return self.__class__.__name__ + '()'
+
+    def __dir__(self):
+        return list(self.keys())
+
+    def copy(self) -> RichResult:
+        """
+        Returns a copy of the instance.
+
+        Returns
+        -------
+        RichResult
+            A deep copy of the current instance. Does not share any memory with
+            the original instance.
+
+        """
+        from copy import deepcopy
+        return deepcopy(self)
 
 
 def _indenter(s, n=0):

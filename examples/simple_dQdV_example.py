@@ -1,95 +1,124 @@
 import pandas as pd
 import ampworks as amp
-from scipy._lib._util import _RichResult  # Used to make printing pretty
 
 # Import the data
 # ===============
-# The negative electrode dataframe (df_neg) and positive electrode dataframe
-# (df_pos) must have columns 'soc' and 'voltage'. The full cell dataframe needs
-# 'soc', 'voltage', 'dsoc_dV', and 'dV_dsoc' columns.
+# Preprocess your data such that you have a representation of the negative and
+# positive electrodes, and full cell potentials in dataframes. All dataframes
+# require columns labeled 'soc' and 'voltage', where 'soc' has already been
+# normalized to be between zero and one.
 
 # An important note: The fitting routine assumes all dataframe 'soc' columns
 # are in the reference direction of the full cell. Therefore, the negative
 # electrode voltage should decrease as 'soc' increases whereas the positive
 # electrode and full cell voltages should increase as their 'soc' increase.
 
-df_neg = pd.read_csv('an_T23_C_24_dis.csv')  # negative electrode data
-df_pos = pd.read_csv('ca_T23_C_6_ch.csv')    # positive electrode data
+neg = pd.read_csv('gr.csv')   # negative electrode data
+pos = pd.read_csv('nmc.csv')  # positive electrode data
 
-df_cell_BOL = pd.read_csv('charge2.csv')     # full cell at beginning of life
-df_cell_EOL = pd.read_csv('charge3866.csv')  # full cell at end of life
+cell_BOL = pd.read_csv('charge2.csv')     # full cell at beginning of life
+cell_EOL = pd.read_csv('charge3866.csv')  # full cell at end of life
 
 # Create a fitter instance
 # ========================
-# The fitter class is used to hold and fit the data. There are a few keyword
-# arguments you can see by running help(amp.dqdv.Fitter). Mostly the defaults
-# are good, but you might want to change 'cost_terms' to include 'voltage' so
-# that an iR offset is fit in addition to the xmin/xmax values of the two
-# electrodes.
+# The fitter class is used to hold and fit the data. Aside from inputing the
+# electrode and full cell data you can choose how you'd like the optimization
+# to run by setting 'cost_terms'. By default, the objective function minimizes
+# errors across voltage, dqdv, and dvdq simultaneously. However, you can also
+# choose to minimize based on any subset of these three. Note that 'cost_terms'
+# can also be changed after initialization, as shown below. The datasets can
+# also be replaced by re-setting any of the 'neg', 'pos', or 'cell' properties.
 
-# Any keyword argument can also be changed after initializing the instance, as
-# shown below.
-
-fitter = amp.dqdv.Fitter(df_neg, df_pos, df_cell_BOL)
+fitter = amp.dqdv.DqdvFitter(neg, pos, cell_BOL)
 fitter.cost_terms = ['voltage', 'dqdv', 'dvdq']
 
-# Coarse searches
-# ===============
+# Grid searches
+# =============
 # Because fitting routines can get stuck in local minima, it can be important
-# to have a good initial guess. The 'coarse_search()' method helps with this.
+# to have a good initial guess. The 'grid_search()' method helps with this.
 # Given a number of discretizations, it applies a brute force method to find
 # a good initial guess by discretizing the xmin/xmax regions into Nx points,
 # and evaluating all physically realistic locations (i.e., xmax > xmin). The
 # result isn't always great, but is typically good enough to use as a starting
-# value for a more robust fitting routine.
+# value for a more robust fitting routine. You can also see what the plot of
+# the best fit looks like using the 'plot()' method, which takes a fit result.
 
-# The output from all 'fits' (coarse searches or otherwise) are dictionaries.
-# You can format the dictionary so that it prints well by using the _RichResult
-# class from scipy, as shown below. You can also see what the plot of the best
-# fit looks like using the 'plot()' method, which takes in the fit results.
-
-summary1 = fitter.coarse_search(11)
-print(_RichResult(**summary1), "\n")
-fitter.plot(summary1['x'])
+summary1 = fitter.grid_search(11)
+fitter.plot(summary1.x)
+print(summary1, "\n")
 
 # Constrained fits
 # ================
 # The 'constrained_fit()' method executes a routine from scipy.optimize to find
 # values of xmin/xmax (and and iR offset if 'voltage' is in 'cost_terms'). The
 # routine forces xmax > xmin for each electrode and sets bounds (+/-) on each
-# xmin and xmax based on the 'fitter.bounds' attributes. See the docstrings for
-# more information and detail.
+# xmin and xmax based on the 'bounds' keyword argument. See the docstrings for
+# more information and detail on changing some of the optimization options.
 
 # The 'constrained_fit()' method takes in a starting guess. You can pass the
-# summary from the 'coarse_search()' if you ran one. Otherwise, you can start
+# summary from the 'grid_search()' if you ran one. Otherwise, you can start
 # with the 'constrained_fit()' routine right way and pass the output from a
 # previous routine back in to see if the fit continues to improve.
 
-summary2 = fitter.constrained_fit(summary1['x'])
-print(_RichResult(**summary2), "\n")
-fitter.plot(summary2['x'])
+summary2 = fitter.constrained_fit(summary1.x)
+fitter.plot(summary2.x)
+print(summary2, "\n")
 
 # Swapping to another data set
 # ============================
 # There is no need to create a 'fitter' instance for multiple files if you are
 # batch processing data. Instead, fit the full cell data starting at beginning
-# of life (BOL) and moving toward end of life (EOL). A guess from the previous
-# previous best fit is typically good enough that there is no need to re-run a
-# 'coarse_search()' routine.
+# of life (BOL) and move toward end of life (EOL). A guess from the previous
+# fit is typically good enough that there is no need to re-run 'grid_search()'.
 
-fitter.df_cell = df_cell_EOL
+fitter.cell = cell_EOL
 
-summary3 = fitter.constrained_fit(summary2['x'])
-print(_RichResult(**summary3), "\n")
-fitter.plot(summary3['x'])
+summary3 = fitter.constrained_fit(summary2.x)
+fitter.plot(summary3.x)
+print(summary3, "\n")
+
+# Calculating LAM/LLI
+# ===================
+# If your main purpose for the dQ/dV fitting is to calculate loss of active
+# material (LAM) and loss of lithium inventory (LLI) then you will need to
+# loop over and collect the fitted stoichiometries from many cell datasets
+# throughout life. Use the 'DqdvResult' class to store all of your results and
+# its 'calc_lam_lli' and 'plot_lam_lli' methods to calculate and/or visualize
+# the LAM/LLI. Simply initialize an instance of DqdvResult before you loop
+# over all of your fits, and append the summary to the results instance after
+# each fit is completed. For example, below we make an instance and add the
+# summary2 and summary3 results. The summary1 result is skipped because it was
+# only performed to give a better starting guess for the constrained fit that
+# provided summary2. DqdvResult has options to allow you to track some of your
+# own metrics as well via an 'extra_cols' argument. This can be used to have
+# columns like 'days', 'efc', 'cycle_number', etc. that you might want to keep
+# track of for plotting or fitting life models to later. This is not shown
+# below, but info is available in the docstrings for interested users. You can
+# access all of the results info via its 'df' property, which is just a standard
+# pandas DataFrame. This gives you access to save the results, add columns in
+# post-processing steps, etc.
+
+results = amp.dqdv.DqdvResult()
+results.append(summary2)
+results.append(summary3)
+
+results.plot_lam_lli()
 
 # Using a GUI
 # ===========
 # If you installed ampworks with the optional GUI dependencies (either by using
 # pip install ampworks[gui] or pip install .[dev]), then you can also perform
-# this analysis using a local web interface. Simple execute the command below
+# this analysis using a local web interface. Simply execute the command below
 # in your terminal (or Anaconda Prompt) to launch the GUI. It is relatively
-# straight forward to use, however, there the documentation is not complete nor
-# available. This will be added in a future release as the software matures.
+# straight forward to use, however, the user guide is not yet available. This
+# will be added in a future release as the software matures.
 
 # ampworks --app dQdV
+
+# If you are using Jupyter Notebooks you can also launch the GUI from any code
+# cell using the following function. There are a couple inputs you can use to
+# allow the GUI to run within Jupyter or to launch an external tab. You can
+# also control the app height if you choose to run the GUI within a Jupyter
+# cell.
+
+# amp.dqdv.run_gui()

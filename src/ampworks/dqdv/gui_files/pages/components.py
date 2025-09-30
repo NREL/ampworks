@@ -1,7 +1,9 @@
 import numpy as np
 import dash_ag_grid as dag
-from dash import dcc, html
 import dash_bootstrap_components as dbc
+
+from dash import dcc, html
+
 
 # Sliders
 marks = {0: '0.0', 1: '1.0'}
@@ -13,7 +15,7 @@ for k, v in marks.copy().items():
 sliders = dbc.Stack(
     [
         dbc.Label('Negative Electrode: [0.00, 1.00]',
-                  id='neg-slider-label', class_name='bold-label mt-0'),
+                  id='neg-slider-label', class_name='bold-label mt-3'),
         dcc.RangeSlider(
             id='neg-slider', updatemode='drag',
             min=0.0, max=1.0, step=0.01, value=[0., 1], marks=marks,
@@ -34,8 +36,8 @@ sliders = dbc.Stack(
 optimize_btns = dbc.Stack(
     [
         dbc.Button(
-            'Coarse Search',
-            id='coarse-btn',
+            'Grid Search',
+            id='grid-btn',
             class_name='amp-btn',
         ),
         dbc.Button(
@@ -74,16 +76,6 @@ terminal = dbc.Row(
     class_name='pb-3 pt-0 px-0 m-0 mx-auto',
 )
 
-# Log toast
-log_toast = dbc.Toast(
-    is_open=False,
-    duration=3000,
-    icon='success',
-    id='log-toast',
-    header='Successful new log',
-    style={'position': 'fixed', 'top': 66, 'right': 10, 'width': 350},
-)
-
 # Logging buttons
 download = dcc.Download(id="download-csv")
 logging_btns = dbc.Stack(
@@ -112,7 +104,7 @@ column_defs = [
     },
     *[
         {'headerName': f"{c}", 'field': f"{c}"}
-        for c in ['x0_neg', 'x100_neg', 'x0_pos', 'x100_pos', 'iR', 'fun']
+        for c in ['xn0', 'xn1', 'xp0', 'xp1', 'iR', 'fun']
     ],
 ]
 

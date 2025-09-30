@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- Include standard deviations in dQdV fits ([#8](https://github.com/NREL/ampworks/pull/8))
 - Add `utils` subpackage with a handful of basic utilities ([#7](https://github.com/NREL/ampworks/pull/7))
 - New `ici` and `datasets` modules, and `Dataset` class... needs tests ([#4](https://github.com/NREL/ampworks/pull/4))
 - Add version warning banner to docs for dev and older releases ([#3](https://github.com/NREL/ampworks/pull/3))
@@ -13,6 +14,7 @@
 - Added tests for `ici.extract_params` ([#5](https://github.com/NREL/ampworks/pull/5))
 
 ### Bug Fixes
+- Readers missing name-only columns, e.g., `testtime` ([#8](https://github.com/NREL/ampworks/pull/8))
 
 ### Breaking Changes
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))

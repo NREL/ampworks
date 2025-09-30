@@ -158,13 +158,16 @@ def skip_util_classes(app, what, name, obj, skip, options):
     
     what_kind = ['method', 'attribute', 'property']
                     
-    if what in what_kind and '.Dataset.' in name:
+    if what in what_kind and '.Dataset.' in name:  # no DataFrame methods
         if name.split('.')[-1] not in dataset_keep:
             skip = True
             
-    elif what in what_kind and '.ProgressBar.' in name:
+    elif what in what_kind and '.ProgressBar.' in name:  # no tqdm methods
         if name.split('.')[-1] not in progbar_keep:
             skip = True
+            
+    elif what in what_kind and '.RichResult.' in name:  # no dict methods
+        skip = True
             
     return skip
             

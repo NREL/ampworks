@@ -8,7 +8,8 @@ class ProgressBar(tqdm):
     """Progress bar."""
 
     def __init__(self, iterable: Iterable = None, manual: bool = False,
-                 desc: str = None, ncols: int = 80, **kwargs) -> None:
+                 desc: str = None, ncols: int = 80, total: int = None,
+                 **kwargs) -> None:
         """
         Wraps the progress bar from ``tqdm``, with different defaults. Also
         enables a custom "manual" mode in which the user manually sets the
@@ -27,6 +28,11 @@ class ProgressBar(tqdm):
         ncols : int, optional
             Terminal column width, by default 80. The special case of zero will
             display limited stats and time, with no progress bar.
+        total : int, optional
+            Number of expected iterations. Use when 'iterable' is a generator,
+            otherwise ETA and the printed bar are skipped.
+        **kwargs : dict, optional
+            Additional keyword arguments to pass through to ``tqdm``.
 
         Raises
         ------
@@ -44,6 +50,7 @@ class ProgressBar(tqdm):
 
         kwargs.setdefault('desc', desc)
         kwargs.setdefault('ncols', ncols)
+        kwargs.setdefault('total', total)
         kwargs.setdefault('ascii', ' 2468█')
         kwargs.setdefault('iterable', iterable)
 
