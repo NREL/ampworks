@@ -34,7 +34,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The protocol assumes formation cycles have already been completed and that
     the cell was rested until equilibrium before starting the steps above.
-    Details of the implementation are available in [1]_.
+    Implementation details are available in [1]_.
 
     Parameters
     ----------
@@ -100,7 +100,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Examples
     --------
     >>> data = amp.datasets.load_datasets('ici_discharge')
-    >>> params, stats = params_from_ici(data, 1.8e-6, return_all=True)
+    >>> params, stats = amp.ici.extract_params(data, 1.8e-6, return_all=True)
     >>> params.plot('SOC', 'Eeq')
     >>> params.plot('SOC', 'Ds', logy=True)
     >>> print(params)

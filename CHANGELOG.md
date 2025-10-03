@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- New `RichTable` container with column validation ([#9](https://github.com/NREL/ampworks/pull/9))
 - Include standard deviations in dQdV fits ([#8](https://github.com/NREL/ampworks/pull/8))
 - Add `utils` subpackage with a handful of basic utilities ([#7](https://github.com/NREL/ampworks/pull/7))
 - New `ici` and `datasets` modules, and `Dataset` class... needs tests ([#4](https://github.com/NREL/ampworks/pull/4))
