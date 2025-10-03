@@ -12,7 +12,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def extract_params(data: Dataset, radius: float, tmin: float = 1,
-                   tmax: float = 60, return_all: bool = False) -> dict:
+                   tmax: float = 60, return_all: bool = False) -> pd.DataFrame:
     """
     Extracts parameters from GITT data
 
@@ -35,7 +35,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The protocol assumes formation cycles have already been completed and that
     the cell was rested until equilibrium before starting the steps above.
-    Details of the implementation are available in [1]_.
+    Implementation details are available in [1]_.
 
     Parameters
     ----------
@@ -87,11 +87,11 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     The algorithm assumes that ``sqrt(t)`` vs. voltage is approximately linear.
     Mathematically this occurs on time scales much less than the time constant
-    ``tau = R**2 / D``. Consequently, large `tmax` that violate ``tmax << tau``
-    will produce incorrect results. For a more detailed discussion see [1]_.
-    Additionally, if a pulse has fewer than two data points between the set
-    relative ``tmin`` and ``tmax`` then the linear regression performed to find
-    the diffusivity and equilbrium potential will return ``NaN`` for both.
+    ``tau = R**2 / D``. Large ``tmax`` that violate ``tmax << tau`` will have
+    incorrect results. See the references for a more detailed discussion. Also,
+    if a pulse has fewer than two data points between the set relative ``tmin``
+    and ``tmax`` then the linear regression performed to find the diffusivity
+    and equilbrium potential will return ``NaN`` for both.
 
     References
     ----------
@@ -147,7 +147,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     # Relative time of each rest/charge or rest/discharge step
     groups = df.groupby(['Pulse', 'State'])
-    df['Step.t'] = groups['Seconds'].transform(lambda x: x - x.iloc[0])
+    df['StepTime'] = groups['Seconds'].transform(lambda x: x - x.iloc[0])
 
     # Remove last cycle if not complete, i.e., ended on charge or discharge
     if df.iloc[-1]['State'] != 'R':
@@ -168,15 +168,15 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
             rest = g[g['State'] == 'R']
             pulse = g[g['State'] != 'R']
 
-            dt_rest = rest['Step.t'].max() - rest['Step.t'].min()
-            dt_pulse = pulse['Step.t'].max() - pulse['Step.t'].min()
+            dt_rest = rest['StepTime'].max() - rest['StepTime'].min()
+            dt_pulse = pulse['StepTime'].max() - pulse['StepTime'].min()
 
             pulse = pulse[
-                (pulse['Step.t'] >= tmin) &
-                (pulse['Step.t'] <= tmax)
+                (pulse['StepTime'] >= tmin) &
+                (pulse['StepTime'] <= tmax)
             ]
 
-            x = np.sqrt(pulse['Step.t'])
+            x = np.sqrt(pulse['StepTime'])
             y = pulse['Volts']
 
             if len(x) <= 1:
