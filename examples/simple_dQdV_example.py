@@ -82,14 +82,14 @@ print(summary3, "\n")
 # If your main purpose for the dQ/dV fitting is to calculate loss of active
 # material (LAM) and loss of lithium inventory (LLI) then you will need to
 # loop over and collect the fitted stoichiometries from many cell datasets
-# throughout life. Use the 'DqdvResult' class to store all of your results and
+# throughout life. Use 'DqdvFitResult' class to store all of your results and
 # its 'calc_lam_lli' and 'plot_lam_lli' methods to calculate and/or visualize
-# the LAM/LLI. Simply initialize an instance of DqdvResult before you loop
+# the LAM/LLI. Simply initialize an instance of 'DqdvFitResult' before you loop
 # over all of your fits, and append the summary to the results instance after
 # each fit is completed. For example, below we make an instance and add the
 # summary2 and summary3 results. The summary1 result is skipped because it was
 # only performed to give a better starting guess for the constrained fit that
-# provided summary2. DqdvResult has options to allow you to track some of your
+# provided summary2. 'DqdvFitResult' also allows you to track some of your
 # own metrics as well via an 'extra_cols' argument. This can be used to have
 # columns like 'days', 'efc', 'cycle_number', etc. that you might want to keep
 # track of for plotting or fitting life models to later. This is not shown
@@ -98,7 +98,7 @@ print(summary3, "\n")
 # pandas DataFrame. This gives you access to save the results, add columns in
 # post-processing steps, etc.
 
-results = amp.dqdv.DqdvResult()
+results = amp.dqdv.DqdvFitResult()
 results.append(summary2)
 results.append(summary3)
 

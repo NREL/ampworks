@@ -1,11 +1,14 @@
 import time
 
+from tempfile import NamedTemporaryFile
+
 import pytest
 import numpy as np
+import pandas as pd
 import ampworks as amp
 
 
-def test_alphanumeric_sort():
+def test_alphanum_sort():
 
     unsorted = [
         'apple3',
@@ -85,16 +88,24 @@ def test_manual_progbar():
 
 def test_RichResult():
 
+    # basic
     result = amp.utils.RichResult()
     assert result._order_keys == []
     assert repr(result) == 'RichResult()'
 
+    # access via dict-style or attr-style
+    result = amp.utils.RichResult(a=1, c=np.random.rand(5))
+    assert (result.a == result['a']) and (result.a is result['a'])
+    assert np.all(result.c == result['c']) and (result.c is result['c'])
+
+    # subclassing
     class NewResult(amp.utils.RichResult):
         pass
 
     result = NewResult()
     assert repr(result) == 'NewResult()'
 
+    # repr ordering
     class OrderedResult(amp.utils.RichResult):
         _order_keys = ['first', 'second',]
 
@@ -104,6 +115,7 @@ def test_RichResult():
     assert repr(new) != repr(ordered)
     assert dir(ordered) == sorted(ordered.keys())
 
+    # copy
     copy = ordered.copy()
     assert isinstance(copy, amp.utils.RichResult)
     assert (copy == ordered) and not (copy is ordered)
@@ -123,9 +135,11 @@ def test_format_float_10():
 
 def test_timer():
 
+    # invalid units
     with pytest.raises(ValueError):
         timer = amp.utils.Timer(units='fake')
 
+    # basic
     def f():
         time.sleep(1e-3)
         return 0.
@@ -138,3 +152,51 @@ def test_timer():
     assert timer._converter['s'](3600.) == 3600.
     assert timer._converter['min'](3600.) == 60.
     assert timer._converter['h'](3600.) == 1.
+
+
+def test_RichTable():
+
+    # basic
+    df = pd.DataFrame({'a': [0, 1], 'b': [2, 3]})
+    table = amp.utils.RichTable(df)
+
+    assert df is not table.df
+    assert table._required_cols == []
+    assert repr(table) == repr(df)
+
+    # access via dict-style or attr-style
+    assert np.all(table.a == table['a']) and (table.a is table['a'])
+    assert np.all(table[['a', 'b']] == df)
+
+    # no direct assignment
+    with pytest.raises(TypeError):
+        table['a'] = 1
+
+    with pytest.raises(AttributeError):
+        table.a = 1
+
+    # subclassing
+    class NewTable(amp.utils.RichTable):
+        _required_cols = ['c', 'd']
+
+    with pytest.raises(ValueError):
+        _ = NewTable(df)
+
+    df2 = df.rename(columns={'a': 'c', 'b': 'd'})
+    new_table = NewTable(df2)
+    assert new_table.df.equals(df2)
+
+    # copy
+    copy = new_table.copy()
+    assert isinstance(copy, NewTable)
+    assert isinstance(copy, amp.utils.RichTable)
+    assert (copy.df.equals(new_table.df)) and not (copy is new_table)
+
+    # to/from csv
+    with NamedTemporaryFile(suffix='.csv') as tmp:
+        tmp.close()
+
+        new_table.to_csv(tmp.name)
+        read = NewTable.from_csv(tmp.name)
+
+        assert new_table.df.equals(read.df)

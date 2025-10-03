@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import scipy.interpolate as interp
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -679,8 +678,8 @@ class DqdvFitter:
         xn0, xn1, xp0, xp1 = params[:4]
         errs = self.err_terms(params)
 
-        fig = plt.figure(figsize=[11, 4.25])
-        gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1])
+        fig = plt.figure(figsize=[9.0, 3.75], constrained_layout=True)
+        gs = fig.add_gridspec(2, 2, height_ratios=[1, 1])
 
         ax1 = fig.add_subplot(gs[:, 0])
         ax2 = fig.add_subplot(gs[0, 1])
@@ -752,7 +751,5 @@ class DqdvFitter:
 
         for ax in [twin, ax2, ax3]:
             format_ticks(ax, xdiv=2, ydiv=2)
-
-        fig.subplots_adjust(hspace=0.1, wspace=0.3)
 
     # TODO: ExitHandler - register plt.show()

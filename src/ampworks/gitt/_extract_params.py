@@ -12,7 +12,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def extract_params(data: Dataset, radius: float, tmin: float = 1,
-                   tmax: float = 60, return_all: bool = False) -> dict:
+                   tmax: float = 60, return_all: bool = False) -> pd.DataFrame:
     """
     Extracts parameters from GITT data
 
@@ -103,7 +103,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Examples
     --------
     >>> data = amp.datasets.load_datasets('gitt_discharge')
-    >>> params, stats = amp.gitt.extract_params(data, 1.8e-6, return_all=True)
+    >>> params, stats = params_from_gitt(data, 1.8e-6, return_all=True)
     >>> params.plot('SOC', 'Eeq')
     >>> params.plot('SOC', 'Ds', logy=True)
     >>> print(params)
@@ -147,7 +147,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
 
     # Relative time of each rest/charge or rest/discharge step
     groups = df.groupby(['Pulse', 'State'])
-    df['Step.t'] = groups['Seconds'].transform(lambda x: x - x.iloc[0])
+    df['StepTime'] = groups['Seconds'].transform(lambda x: x - x.iloc[0])
 
     # Remove last cycle if not complete, i.e., ended on charge or discharge
     if df.iloc[-1]['State'] != 'R':
@@ -168,15 +168,15 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
             rest = g[g['State'] == 'R']
             pulse = g[g['State'] != 'R']
 
-            dt_rest = rest['Step.t'].max() - rest['Step.t'].min()
-            dt_pulse = pulse['Step.t'].max() - pulse['Step.t'].min()
+            dt_rest = rest['StepTime'].max() - rest['StepTime'].min()
+            dt_pulse = pulse['StepTime'].max() - pulse['StepTime'].min()
 
             pulse = pulse[
-                (pulse['Step.t'] >= tmin) &
-                (pulse['Step.t'] <= tmax)
+                (pulse['StepTime'] >= tmin) &
+                (pulse['StepTime'] <= tmax)
             ]
 
-            x = np.sqrt(pulse['Step.t'])
+            x = np.sqrt(pulse['StepTime'])
             y = pulse['Volts']
 
             if len(x) <= 1:

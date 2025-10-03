@@ -1,18 +1,19 @@
 from __future__ import annotations
+from typing import Any
 
 import numpy as np
 
 
 # RichResult and its formatters are modified copies from scipy._lib._util
 class RichResult(dict):
-    """Output container with pretty printing."""
+    """Dict-like results container."""
 
     _order_keys = []
 
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         This class is a based off the ``_RichResult`` class in the ``scipy``
         library. It combines a series of formatting functions to make the
@@ -41,9 +42,9 @@ class RichResult(dict):
 
         .. code-block:: python
 
-            import ampworks as amp
+            from ampworks.utils import RichResult
 
-            class CustomResult(amp.utils.RichResult):
+            class CustomResult(RichResult):
                 _order_keys = ['first', 'second', 'third',]
 
             result = CustomResult(second=None, last=None, first=None)
@@ -56,7 +57,6 @@ class RichResult(dict):
         .. code-block:: python
 
             import numpy as np
-
             from ampworks.utils import RichResult
 
             t = np.linspace(0, 1, 1000)
@@ -83,13 +83,16 @@ class RichResult(dict):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
+        """Provide attribute-style access to dictionary keys."""
         try:
             return self[name]
         except KeyError as e:
             raise AttributeError(name) from e
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a nicely formatted string representation of the instance."""
+
         order_keys = getattr(self, '_order_keys')
 
         def key(item):
@@ -98,7 +101,7 @@ class RichResult(dict):
             except ValueError:  # item not in list, move to end
                 return np.inf
 
-        def sorter(d):
+        def sorter(d: list[str]) -> list[str]:
             return sorted(d.items(), key=key)
 
         if self.keys():
@@ -107,6 +110,7 @@ class RichResult(dict):
             return self.__class__.__name__ + '()'
 
     def __dir__(self):
+        """List available attributes, corresponding to dictionary keys."""
         return list(self.keys())
 
     def copy(self) -> RichResult:
@@ -126,14 +130,12 @@ class RichResult(dict):
 
 def _indenter(s, n=0):
     """Ensures lines after the first are indented by the specified amount."""
-
     split = s.split('\n')
     return ('\n' + ' '*n).join(split)
 
 
 def _format_float_10(x):
     """Returns string representation of floats with exactly ten characters."""
-
     if np.isposinf(x):
         return '       inf'
     elif np.isneginf(x):
