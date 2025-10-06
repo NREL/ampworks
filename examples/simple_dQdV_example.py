@@ -79,7 +79,7 @@ print(summary3, "\n")
 
 # Calculating LAM/LLI
 # ===================
-# If your main purpose for the dQ/dV fitting is to calculate loss of active
+# If your main purpose for the dQdV fitting is to calculate loss of active
 # material (LAM) and loss of lithium inventory (LLI) then you will need to
 # loop over and collect the fitted stoichiometries from many cell datasets
 # throughout life. Use 'DqdvFitResult' class to store all of your results and

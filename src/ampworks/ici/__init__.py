@@ -1,6 +1,4 @@
 """
-ICI
----
 Tools to analyze Incremental Current Interruption (ICI) data. Includes functions
 to extract diffusion coefficients and equilibrium potentials from experimental
 measurements.

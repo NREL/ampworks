@@ -1,21 +1,57 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from ampworks.utils import RichTable
+from ampworks.utils import RichTable, RichResult
 
-if TYPE_CHECKING:  # pragma: no cover
-    from ampworks.utils import RichResult
+
+class DqdvFitResult(RichResult):
+    """dQdV fit result."""
+
+    def __init__(self, **kwargs) -> None:
+        """
+        Container for fits from the ``DqdvFitter``. An instance of this class
+        is returned from both the grid search and constrained fit methods.
+
+        ========= ========= ==============================================
+        Attribute Type      Description
+        ========= ========= ==============================================
+        success   bool      whether or not the routine exited successfully
+        message   str       description of the cause of termination
+        nfev      int       number of function evaluations
+        niter     int       number of optimization iterations
+        fun       float     value of objective function at `x`
+        x         1D array  the solution of the optimization
+        x_std     1D array  approximate standard deviation for each `x`
+        x_map     list[str] names/order of values store in `x`
+        ========= ========= ==============================================
+
+        """
+        super().__init__(**kwargs)
 
 
 class DqdvFitTable(RichTable):
+    """dQdV fits table."""
+
     _required_cols = [
         'Ah', 'xn0', 'xn0_std', 'xn1', 'xn1_std', 'xp0', 'xp0_std',
         'xp1', 'xp1_std', 'iR', 'iR_std', 'fun', 'success', 'message',
     ]
 
     def __init__(self, extra_cols: list[str] | None = None) -> None:
+        """
+        A container to store multiple dQdV fits. An instance of this class is
+        required to run ``calc_lam_lli``. Loop over multiple datasets and append
+        fits one at a time to the table using the ``append`` method.
+
+        Parameters
+        ----------
+        extra_cols : list[str] or None, optional
+            Any extra, non-required columns to add to the table. Pass the column
+            names and their row values to ``append`` when writing each row. Use
+            to track equivalent full cycles or other metrics with each fit.
+
+        """
 
         if extra_cols is None:
             extra_cols = []
@@ -26,7 +62,24 @@ class DqdvFitTable(RichTable):
 
         super().__init__(df)
 
-    def append(self, summary: RichResult, **extra_cols) -> None:
+    def append(self, summary: DqdvFitResult, **extra_cols) -> None:
+        """
+        Append a new row to the table.
+
+        Parameters
+        ----------
+        summary : DqdvFitResult
+            A summary of the fit results.
+        extra_cols : dict, optional
+            Any extra column names/values to include in the row.
+
+        Raises
+        ------
+        ValueError
+            Columns cannot be created on the fly. Any extra columns must be
+            defined at initialization.
+
+        """
         row = {
             'Ah': summary.Ah,
             'fun': summary.fun,
@@ -41,7 +94,7 @@ class DqdvFitTable(RichTable):
 
         # add in any extra columns
         for k in extra_cols.keys():
-            if k not in self.df.columns:
+            if k not in self._df.columns:
                 raise ValueError(
                     f"Column '{k}' does not exist in 'DqdvFitResult'. Extra"
                     " columns must be defined during initialization."
@@ -50,11 +103,26 @@ class DqdvFitTable(RichTable):
             row[k] = extra_cols[k]
 
         # append the new row
-        self.df.loc[len(self.df)] = row
+        self._df.loc[len(self._df)] = row
 
 
-class AgingTable(RichTable):
+class DegModeTable(RichTable):
+    """Degradation modes table."""
+
     _required_cols = [
         'Qn', 'Qn_std', 'Qp', 'Qp_std', 'LAMn', 'LAMn_std', 'LAMp', 'LAMp_std',
         'LLI', 'LLI_std',
     ]
+
+    def __init__(self, df: pd.DataFrame) -> None:
+        """
+        An output container for ``calc_lam_lli``. Stores electrode capacities,
+        loss of active material (LAM), and loss of lithium inventory (LLI).
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The input dataframe to store.
+
+        """
+        super().__init__(df)

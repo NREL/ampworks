@@ -40,7 +40,7 @@ class RichTable:
         --------
         A minimal example using ``RichTable`` directly:
 
-        .. code-block::
+        .. code-block:: python
 
             import pandas as pd
             from ampworks.utils import RichTable
@@ -51,7 +51,7 @@ class RichTable:
 
         Subclassing to enforce required columns:
 
-        .. code-block::
+        .. code-block:: python
 
             import pandas as pd
             from ampworks.utils import RichTable

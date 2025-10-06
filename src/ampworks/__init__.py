@@ -12,6 +12,8 @@ includes search functionality and more detailed examples.
 
 """
 
+from typing import TYPE_CHECKING
+
 from ._core import (
     Dataset,
     read_csv,
@@ -37,6 +39,11 @@ __all__ = [
     '_in_notebook',
 ]
 
+if TYPE_CHECKING:
+    from ampworks import (
+        ici, gitt, dqdv, utils, datasets, mathutils, plotutils,
+    )
+
 
 # Lazily load submodules/subpackages
 _lazy_modules = {
@@ -51,15 +58,18 @@ _lazy_modules = {
 
 
 def __getattr__(name):
+    import importlib
+
     if name in _lazy_modules:
-        module = __import__(_lazy_modules[name], fromlist=[name])
+        module = importlib.import_module(_lazy_modules[name])
         globals()[name] = module  # cache for later
         return module
+
     raise AttributeError(f"module {__name__} has no attribute {name}")
 
 
 def __dir__():
-    return list(globals().keys() | __all__)
+    return list(globals()) + list(_lazy_modules)
 
 
 # Check for interactive and notebook environments
