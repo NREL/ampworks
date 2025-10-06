@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- Update dQdV GUI figure to gridspec with electrode voltages ([#10](https://github.com/NREL/ampworks/pull/10))
 - New `RichTable` container with column validation ([#9](https://github.com/NREL/ampworks/pull/9))
 - Include standard deviations in dQdV fits ([#8](https://github.com/NREL/ampworks/pull/8))
 - Add `utils` subpackage with a handful of basic utilities ([#7](https://github.com/NREL/ampworks/pull/7))
@@ -11,6 +12,7 @@
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))
 
 ### Optimizations
+- Store custom plotly template and config in `_style` module ([#10](https://github.com/NREL/ampworks/pull/10))
 - Added tests for `gitt.extract_params` ([#6](https://github.com/NREL/ampworks/pull/6))
 - Added tests for `ici.extract_params` ([#5](https://github.com/NREL/ampworks/pull/5))
 

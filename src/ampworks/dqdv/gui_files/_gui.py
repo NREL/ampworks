@@ -39,7 +39,7 @@ dummy_block = html.Div(id='dummy-block', className='dummy-block')
 
 main_page = html.Div(
     id='main-page',
-    className='main-page mx-auto my-3',
+    className='main-page mx-auto my-5',
     children=[dash.page_container, setup_page_components()],
 )
 
@@ -73,6 +73,7 @@ app.layout = html.Div(
         grid_container,
     ],
 )
+
 
 # Transform page on width breakpoint
 app.clientside_callback(
@@ -112,6 +113,7 @@ def run(debug: bool = False, jupyter_mode: str = 'external',
         webbrowser.open_new('http://127.0.0.1:8050/')
 
     app.run(
+        port=None,
         debug=debug,
         jupyter_mode=jupyter_mode,
         jupyter_height=jupyter_height,

@@ -15,6 +15,7 @@ if TYPE_CHECKING:  # pragma: no cover
     import numpy.typing as npt
 
     from ampworks.utils import RichResult
+    from ampworks.dqdv import DqdvFitResult
 
 
 class DqdvFitter:
@@ -24,9 +25,7 @@ class DqdvFitter:
         cell: pd.DataFrame = None, cost_terms: str | list[str] = 'all',
     ) -> None:
         """
-        Wrapper for dQ/dV fitting.
-
-        TODO: detailed description for dQ/dV fitting class.
+        Wrapper for dQdV fitting.
 
         Parameters
         ----------
@@ -43,7 +42,7 @@ class DqdvFitter:
         Notes
         -----
         * The dataframe inputs are all required. The default ``None`` values
-          allow you to initialize the class first and add each one at a time.
+          allow you to initialize the class first and add them one at a time.
           This is primarily to support interactions with the GUI.
         * When 'voltage' is included in ``cost_terms``, an iR term is fit in
           addition to the x0/x1 stoichiometries. Otherwise, the ohmic iR offset
@@ -119,9 +118,8 @@ class DqdvFitter:
         """
         Get or set the full cell dataframe.
 
-        Columns must include 'soc' for state of charge, 'voltage' for the cell
-        voltage, 'dsoc_dV' for the derivative dsov/dV, and 'dV_dsoc' for the
-        derivative dV/dsoc. 'soc' should be normalized to [0, 1].
+        Columns must include both 'soc' for state of charge and 'voltage' for
+        the half-cell voltage. 'soc' should be normalized to [0, 1].
 
         """
         return self._cell
@@ -269,7 +267,7 @@ class DqdvFitter:
 
         Parameters
         ----------
-        which : {'neg', 'pos', 'cell'}
+        domain : {'neg', 'pos', 'cell'}
             Which OCV spline to evaluate.
         x : ArrayLike
             Stoichiometry or SOC values to evaluate at.
@@ -300,19 +298,19 @@ class DqdvFitter:
 
     def get_dvdq(self, domain: str, soc: npt.ArrayLike) -> npt.ArrayLike:
         """
-        Evaluate the dV/dq spline for the specified domain.
+        Evaluate the dvdq spline for the specified domain.
 
         Parameters
         ----------
-        which : {'neg', 'pos', 'cell'}
-            Which dV/dq spline to evaluate.
+        domain : {'neg', 'pos', 'cell'}
+            Which dvdq spline to evaluate.
         x : ArrayLike
             Stoichiometry or SOC values to evaluate at.
 
         Returns
         -------
         dvdq : np.ndarray
-            Evaluated dV/dq values.
+            Evaluated dvdq values.
 
         Raises
         ------
@@ -335,19 +333,19 @@ class DqdvFitter:
 
     def get_dqdv(self, domain: str, soc: npt.ArrayLike) -> npt.ArrayLike:
         """
-        Evaluate the dq/dV spline for the specified domain.
+        Evaluate the dqdv spline for the specified domain.
 
         Parameters
         ----------
-        which : {'neg', 'pos', 'cell'}
-            Which dq/dV spline to evaluate.
+        domain : {'neg', 'pos', 'cell'}
+            Which dqdv spline to evaluate.
         x : ArrayLike
             Stoichiometry or SOC values to evaluate at.
 
         Returns
         -------
         dvdq : np.ndarray
-            Evaluated dq/dV values.
+            Evaluated dqdv values.
 
         Raises
         ------
@@ -446,7 +444,7 @@ class DqdvFitter:
             Summarized results from the grid search.
 
         """
-        from ampworks.utils import RichResult
+        from ampworks.dqdv import DqdvFitResult
         from ampworks.mathutils import combinations
 
         self._check_initialized('grid_search')
@@ -469,7 +467,7 @@ class DqdvFitter:
         index = np.argmin(errs)
         x_opt = np.fromiter(valid_ps[index].values(), dtype=float)
 
-        summary = RichResult(
+        summary = DqdvFitResult(
             success=True,
             message='Done searching.',
             nfev=len(errs),
@@ -485,7 +483,7 @@ class DqdvFitter:
     def constrained_fit(
         self, x0: npt.ArrayLike, bounds: float | list[float] = 0.1,
         xtol: float = 1e-8, maxiter: int = 1e5, return_full: bool = False,
-    ) -> RichResult:
+    ) -> DqdvFitResult:
         """
         Run a trust-constrained local optimization routine to minimize error
         between the fit and data.
@@ -508,7 +506,7 @@ class DqdvFitter:
 
         Returns
         -------
-        summary : RichResult
+        summary : DqdvFitResult
             A subset summary of SciPy's optimization results, including an added
             approximate standard deviation for the pameters.
         optresult : OptimizeResult
@@ -540,7 +538,7 @@ class DqdvFitter:
 
         """
         from numdifftools import Hessian
-        from ampworks.utils import RichResult
+        from ampworks.dqdv import DqdvFitResult
 
         self._check_initialized('constrained_fit')
 
@@ -640,7 +638,7 @@ class DqdvFitter:
             if std is not None:
                 std[-1] = 0.
 
-        summary = RichResult(
+        summary = DqdvFitResult(
             success=result.success,
             message=result.message,
             nfev=result.nfev,
@@ -671,6 +669,7 @@ class DqdvFitter:
         None.
 
         """
+        from ampworks.utils import _ExitHandler
         from ampworks.plotutils import add_text, format_ticks, focused_limits
 
         self._check_initialized('plot')
@@ -752,4 +751,4 @@ class DqdvFitter:
         for ax in [twin, ax2, ax3]:
             format_ticks(ax, xdiv=2, ydiv=2)
 
-    # TODO: ExitHandler - register plt.show()
+        _ExitHandler(plt.show)

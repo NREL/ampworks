@@ -75,15 +75,14 @@ class Dataset(pd.DataFrame):
                             save: str = None) -> None:
 
         from ampworks import _in_notebook
+        from ampworks.plotutils._style import PLOTLY_CONFIG, PLOTLY_TEMPLATE
 
         fig = px.line(
             self, x=x, y=y, markers=True,
             hover_data={col: True for col in tips},
         )
 
-        fig.update_layout(dragmode='pan')
-
-        config = {'scrollZoom': True}
+        fig.update_layout(template=PLOTLY_TEMPLATE)
 
         in_nb = _in_notebook()
         auto_open = True if not in_nb else False
@@ -94,7 +93,7 @@ class Dataset(pd.DataFrame):
             if not path.endswith('.html'):
                 path += '.html'
 
-            fig.write_html(path, auto_open=auto_open, config=config)
+            fig.write_html(path, auto_open=auto_open, config=PLOTLY_CONFIG)
 
         if in_nb:
-            fig.show(config=config)
+            fig.show(config=PLOTLY_CONFIG)

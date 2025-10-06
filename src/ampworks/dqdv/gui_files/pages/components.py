@@ -18,14 +18,14 @@ sliders = dbc.Stack(
                   id='neg-slider-label', class_name='bold-label mt-3'),
         dcc.RangeSlider(
             id='neg-slider', updatemode='drag',
-            min=0.0, max=1.0, step=0.01, value=[0., 1], marks=marks,
+            min=0.0, max=1.0, step=0.01, value=[0., 1.], marks=marks,
         ),
 
         dbc.Label('Positive Electrode: [0.00, 1.00]',
                   id='pos-slider-label', class_name='bold-label mt-3'),
         dcc.RangeSlider(
             id='pos-slider', updatemode='drag',
-            min=0.0, max=1.0, step=0.01, value=[0, 1], marks=marks,
+            min=0.0, max=1.0, step=0.01, value=[0., 1.], marks=marks,
         ),
     ],
     class_name='mx-auto',

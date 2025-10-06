@@ -1,7 +1,5 @@
 """
-dQdV
-----
-Functions for analyzing dQ/dV data from battery experiments. Provides curve
+Functions for analyzing dQdV data from battery experiments. Provides curve
 extraction and smoothing, fitting methods, and post-processing of degradation
 modes from fitted stoichiometries.
 
@@ -10,13 +8,14 @@ modes from fitted stoichiometries.
 import warnings
 
 from ._dqdv_fitter import DqdvFitter
-from ._tables import AgingTable, DqdvFitTable
+from ._tables import DqdvFitResult, DqdvFitTable, DegModeTable
 from ._lam_lli import calc_lam_lli, plot_lam_lli
 
 __all__ = [
     'DqdvFitter',
-    'AgingTable',
+    'DqdvFitResult',
     'DqdvFitTable',
+    'DegModeTable',
     'calc_lam_lli',
     'plot_lam_lli',
     'run_gui',
@@ -25,36 +24,32 @@ __all__ = [
 
 def run_gui(jupyter_mode: str = 'external', jupyter_height: int = 650) -> None:
     """
-    Run a graphical interface for the Fitter class.
+    Run a graphical dQdV fitting interface.
 
     Parameters
     ----------
     jupyter_mode : {'external', 'inline'}, optional
-        How to display the application when running inside a jupyter notebook.
-        'external' opens an external web browser (default). 'inline' runs the
-        application inside the notebook.
+        How to display the GUI in jupyter notebooks. Run in a new browser tab
+        with 'external' (default), or in the notebook with 'inline'.
     jupyter_height : int, optional
-        Height of the application (in px) when displayed using 'inline'. The
-        default is 650.
+        Application height (px) when displayed using 'inline'. Defaults to 650.
 
     Returns
     -------
     None.
 
-    Notes
-    -----
+    Warnings
+    --------
     This function is only intended for use inside Jupyter Notebooks. You may
     experience issues if you call it from a normal script, or in an interactive
-    session within some IDEs (e.g., Spyder, PyCharm, IPython, etc.). However,
-    if you're looking for an alternate way to access the GUI without needing to
-    open a Jupyter Notebook, you can use the ``ampworks --app`` command from
-    your terminal.
+    session within some IDEs (e.g., Spyder, PyCharm, IPython, etc.). if you're
+    looking for another way to access the GUI without needing to open Jupyter
+    Notebooks, you can use the ``ampworks --app`` command from your terminal.
 
     """
 
+    from ampworks.dqdv.gui_files import _gui
     from ampworks import _in_interactive, _in_notebook
-
-    from .gui_files import _gui
 
     if not isinstance(jupyter_mode, str):
         raise TypeError("'jupyter_mode' must be type str.")

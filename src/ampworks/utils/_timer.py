@@ -7,28 +7,16 @@ class Timer:
     """
     Timer utility.
 
-    Measures the elapsed time for a series of steps and prints the result to
-    the console. To use this utility, place your code in a ``with`` block.
-    For example,
-
-    .. code-block:: python
-
-        import time
-
-        def function(sleep_time: float) -> None:
-            time.sleep(sleep_time)
-
-        with Timer():
-            function(2.)
-
     """
 
     __slots__ = ('name', '_units', '_converter', '_start', '_stop',)
 
     def __init__(self, name: str = 'Elapsed time', units: str = 's') -> None:
         """
-        Initialize the timer with a name so you can tell what steps each print
-        statement is associated with when timing multiple code blocks.
+        Measures elapsed time for a series of steps and prints results to the
+        console. Initialize with a name to tell what steps each print statement
+        is associated with when timing multiple blocks. Also has control to
+        print in different units of time.
 
         Parameters
         ----------
@@ -36,6 +24,23 @@ class Timer:
             Code block name used in print. The default is 'Elapsed time'.
         units : str, optional
             Printing units, from {'s', 'min', 'h'}. The default is 's'.
+
+        Examples
+        --------
+        The ``Timer`` works as a context manager and is accessed using ``with``
+        blocks. For example:
+
+        .. code-block:: python
+
+        import time
+        from ampworks.utils import Timer
+
+        def function(sleep_time: float) -> None:
+            time.sleep(sleep_time)
+
+        with Timer():
+            function(2.)
+
 
         """
 

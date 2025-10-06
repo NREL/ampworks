@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ._tables import AgingTable, DqdvFitTable
+    from ._tables import DegModeTable, DqdvFitTable
 
 
 def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
@@ -55,7 +55,7 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
 
     """
 
-    from ._tables import AgingTable
+    from ._tables import DegModeTable
 
     df = fit_result.df.copy()
 
@@ -101,12 +101,13 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
         'LLI': LLI, 'LLI_std': LLI_std,
     })
 
-    return AgingTable(aging)
+    return DegModeTable(aging)
 
 
-def plot_lam_lli(aging_table: AgingTable, fit_table: DqdvFitTable,
+def plot_lam_lli(aging_table: DegModeTable, fit_table: DqdvFitTable,
                  x_col: str | None = None, std: bool = True) -> None:
 
+    from ampworks.utils import _ExitHandler
     from ampworks.plotutils import format_ticks
 
     df = pd.concat([aging_table.df, fit_table.df], axis=1)
@@ -156,3 +157,5 @@ def plot_lam_lli(aging_table: AgingTable, fit_table: DqdvFitTable,
 
     # formatting
     format_ticks(axs, xdiv=2, ydiv=2)
+
+    _ExitHandler(plt.show)

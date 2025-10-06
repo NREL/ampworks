@@ -5,7 +5,6 @@ import dash
 import numpy as np
 import pandas as pd
 import ampworks as amp
-import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 from dash import dcc, html, Output, Input, State
@@ -184,9 +183,9 @@ def line_properties(label, identifier, values):
     linestyles = dict((v, v) for v in ['solid', 'dash', 'dot'])
     linewidths = dict((v, v) for v in [1, 2, 3, 4, 5])
 
-    id_style = {'type': 'line-style', 'index': identifier}
-    id_width = {'type': 'line-width', 'index': identifier}
-    id_color = {'type': 'line-color', 'index': identifier}
+    id_style = 'ls-' + identifier
+    id_width = 'lw-' + identifier
+    id_color = 'clr-' + identifier
 
     prop_label = dbc.Label(label, class_name='bold-label')
 
@@ -219,12 +218,12 @@ def line_properties(label, identifier, values):
 
 
 def marker_properties(label, identifier, values):
-    markstyles = dict((v, v) for v in ['o', 'x', '^', '+'])
+    markstyles = dict((v, v) for v in ['circle', 'square', 'diamond'])
     marksizes = dict((v, v) for v in [5, 10, 15, 20, 25])
 
-    id_style = {'type': 'mark-style', 'index': identifier}
-    id_size = {'type': 'mark-size', 'index': identifier}
-    id_color = {'type': 'mark-color', 'index': identifier}
+    id_style = 'mk-' + identifier
+    id_size = 'ms-' + identifier
+    id_color = 'clr-' + identifier
 
     prop_label = dbc.Label(label, class_name='bold-label')
 
@@ -236,7 +235,7 @@ def marker_properties(label, identifier, values):
     ], style={'width': '90%', 'margin': '5px auto'})
 
     linewidth = dbc.Row([
-        dbc.Col(dbc.Label('Line width')),
+        dbc.Col(dbc.Label('Marker size')),
         dbc.Col(dbc.Select(marksizes, value=values[1], id=id_size), width=5),
     ], style={'width': '90%', 'margin': '5px auto'})
 
@@ -256,10 +255,10 @@ def marker_properties(label, identifier, values):
     return props_block
 
 
-neg_style = ['solid', 2, '#dc3912']
-pos_style = ['solid', 2, '#3366cc']
-cell_style = ['o', 10, '#990099']
-model_style = ['solid', 2, '#999999']
+neg_style = ['solid', 2, '#1f77b4']
+pos_style = ['solid', 2, '#d62728']
+cell_style = ['circle', 10, '#c5c5c5']
+model_style = ['solid', 2, '#000000']
 
 fig_menu = html.Div(
     [
@@ -406,48 +405,69 @@ dash.clientside_callback(
 
 # Support functions
 def make_figure(params, flags, new_data=False):
+    from ampworks.plotutils import focused_limits
 
-    if new_data and all(flags.values()):
-        output = fitter.err_terms(params)
-
-        x = output['soc']
-
-        y1d = output['volt_data']
-        y2d = output['dqdv_data']
-        y3d = output['dvdq_data']
-
-        y1f = output['volt_fit']
-        y2f = output['dqdv_fit']
-        y3f = output['dvdq_fit']
-
-        figure.data = ()
-
-        mk = {}  # dict(color='#990099', size=10, symbol='circle')
-        ln = {}  # dict(color='#999999', width=2, dash='solid')
-
-        dat = dict(mode='markers', name='Full Cell',
-                   showlegend=False, marker=mk)
-        fit = dict(mode='lines', name='Model', showlegend=False, line=ln)
-
-        figure.add_trace(go.Scatter(x=x, y=y1d, **dat), row=1, col=1)
-        figure.add_trace(go.Scatter(x=x, y=y2d, **dat), row=1, col=2)
-        figure.add_trace(go.Scatter(x=x, y=y3d, **dat), row=1, col=3)
-
-        figure.add_trace(go.Scatter(x=x, y=y1f, **fit), row=1, col=1)
-        figure.add_trace(go.Scatter(x=x, y=y2f, **fit), row=1, col=2)
-        figure.add_trace(go.Scatter(x=x, y=y3f, **fit), row=1, col=3)
-
-    elif all(flags.values()):
-        output = fitter.err_terms(params)
-
-        figure.data[3].y = output['volt_fit']
-        figure.data[4].y = output['dqdv_fit']
-        figure.data[5].y = output['dvdq_fit']
-
-    if all(flags.values()):
-        return figure
-    else:
+    if not all(flags.values()):
         return placeholder_fig
+
+    errs = fitter.err_terms(params)
+
+    soc = errs['soc']
+
+    volt_data = errs['volt_data']
+    dqdv_data = errs['dqdv_data']
+    dvdq_data = errs['dvdq_data']
+
+    volt_fit = errs['volt_fit']
+    dqdv_fit = errs['dqdv_fit']
+    dvdq_fit = errs['dvdq_fit']
+
+    volt_err = errs['volt_err']
+    dqdv_err = errs['dqdv_err']
+    dvdq_err = errs['dvdq_err']
+
+    xn0, xn1, xp0, xp1 = params[:4]
+
+    socp = (soc - xp0) / (xp1 - xp0)
+    ocv_p = fitter._ocv_p(soc)
+
+    socn = (soc - xn0) / (xn1 - xn0)
+    ocv_n = fitter._ocv_n(soc)
+
+    if new_data:
+
+        for i in range(0, 3):
+            figure.data[i].x = soc[::5] if i == 0 else soc[::3]
+
+        for i in range(3, 6):
+            figure.data[i].x = soc
+
+        figure.data[0].y = volt_data[::5]
+        figure.data[1].y = dqdv_data[::3]
+        figure.data[2].y = dvdq_data[::3]
+
+        # focus ylimits for dvdq
+        ylims = focused_limits(np.hstack([dvdq_data, dvdq_fit]))
+        figure.update_yaxes(
+            row=2, col=2, range=ylims,
+            autorangeoptions=dict(minallowed=ylims[0], maxallowed=ylims[1]),
+        )
+
+    figure.data[3].y = volt_fit
+    figure.data[4].y = dqdv_fit
+    figure.data[5].y = dvdq_fit
+
+    figure.layout.annotations[0].text = f"MAP={volt_err:.2e}%"
+    figure.layout.annotations[1].text = f"MAP={dqdv_err:.2e}%"
+    figure.layout.annotations[2].text = f"MAP={dvdq_err:.2e}%"
+
+    figure.data[6].x = socp
+    figure.data[6].y = ocv_p
+
+    figure.data[7].x = socn
+    figure.data[7].y = ocv_n
+
+    return figure
 
 
 UPLOAD_IDS = ['neg', 'pos', 'cell']
@@ -563,7 +583,7 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
     if trigger == 'grid-btn' and _c and all(flags.values()):
         summary = fitter.grid_search(opt_data['grid-Nx'])
         params = summary['x']
-    elif trigger == 'min-err-btn' and all(flags.values()):
+    elif trigger == 'min-err-btn' and _m and all(flags.values()):
         x0 = np.array(neg_s + pos_s)
         summary = fitter.constrained_fit(x0, **options)
         params = summary['x']
@@ -574,7 +594,7 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
 
     if summary:
         x = np.round(summary['x'], 2)
-        neg_s, pos_s = list(x[:2]), list(x[2:])
+        neg_s, pos_s = list(x[0:2]), list(x[2:4])
 
     return '', neg_s, pos_s, summary
 
@@ -586,38 +606,105 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
     prevent_initial_call=True,
 )
 def toggle_theme_switch(switch_on, flags):
-    if switch_on:  # light mode
-        bg_color = 'white'
-        font_color = '#212529'
-        border_color = '#212529'
-    else:          # dark mode
-        bg_color = '#212529'
-        font_color = '#f8f9fa'
-        border_color = '#f8f9fa'
+
+    if not all(flags.values()):
+        return placeholder_fig
+
+    bg_color = 'white' if switch_on else 'lightgrey'
 
     figure.update_layout(
         plot_bgcolor=bg_color,
         paper_bgcolor=bg_color,
-        font=dict(color=font_color),
-        xaxis=dict(showgrid=False, showline=True),
-        yaxis=dict(showgrid=False, showline=True),
     )
 
-    for i in range(3):
-        figure.update_xaxes(
-            row=1, col=i+1,
-            tickcolor=border_color,
-            linecolor=border_color,
-            mirror='allticks',
-        )
-        figure.update_yaxes(
-            row=1, col=i+1,
-            tickcolor=border_color,
-            linecolor=border_color,
-            mirror='allticks',
-        )
+    return figure
 
-    if all(flags.values()):
-        return figure
-    else:
+
+@dash.callback(
+    Output('figure-div', 'figure', allow_duplicate=True),
+    [
+        Input('mk-cell', 'value'),
+        Input('ms-cell', 'value'),
+        Input('clr-cell', 'value'),
+    ],
+    State('flags', 'data'),
+    prevent_initial_call=True,
+)
+def update_cell_styles(mk, ms, clr, flags):
+
+    for i in range(0, 3):
+        figure.data[i].marker.symbol = mk
+        figure.data[i].marker.size = int(ms)
+        figure.data[i].marker.color = clr
+
+    if not all(flags.values()):
         return placeholder_fig
+
+    return figure
+
+
+@dash.callback(
+    Output('figure-div', 'figure', allow_duplicate=True),
+    [
+        Input('ls-model', 'value'),
+        Input('lw-model', 'value'),
+        Input('clr-model', 'value'),
+    ],
+    State('flags', 'data'),
+    prevent_initial_call=True,
+)
+def update_model_styles(ls, lw, clr, flags):
+
+    for i in range(3, 6):
+        figure.data[i].line.dash = ls
+        figure.data[i].line.width = int(lw)
+        figure.data[i].line.color = clr
+
+    if not all(flags.values()):
+        return placeholder_fig
+
+    return figure
+
+
+@dash.callback(
+    Output('figure-div', 'figure', allow_duplicate=True),
+    [
+        Input('ls-pos', 'value'),
+        Input('lw-pos', 'value'),
+        Input('clr-pos', 'value'),
+    ],
+    State('flags', 'data'),
+    prevent_initial_call=True,
+)
+def update_pos_styles(ls, lw, clr, flags):
+
+    figure.data[6].line.dash = ls
+    figure.data[6].line.width = int(lw)
+    figure.data[6].line.color = clr
+
+    if not all(flags.values()):
+        return placeholder_fig
+
+    return figure
+
+
+@dash.callback(
+    Output('figure-div', 'figure', allow_duplicate=True),
+    [
+        Input('ls-neg', 'value'),
+        Input('lw-neg', 'value'),
+        Input('clr-neg', 'value'),
+    ],
+    State('flags', 'data'),
+    prevent_initial_call=True,
+)
+def update_neg_styles(ls, lw, clr, flags):
+
+    figure.data[7].line.dash = ls
+    figure.data[7].line.width = int(lw)
+    figure.data[7].line.color = clr
+
+    if not all(flags.values()):
+        return placeholder_fig
+
+    return figure
