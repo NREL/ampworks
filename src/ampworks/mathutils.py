@@ -22,7 +22,8 @@ def combinations(values: list[ndarray], names: list[str] = None) -> list[dict]:
     values : list[1D array]
         Variable values. Array ``i`` corresponds to ``names[i]``, if provided.
     names : list[str], optional
-        Variable names. Defaults to ``range(N)`` when not provided.
+        Variable names. Defaults to ``range(N)`` when not provided, where ``N``
+        is the length of 'values', i.e., how many arrays are in the list.
 
     Returns
     -------

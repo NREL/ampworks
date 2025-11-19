@@ -15,9 +15,9 @@
 [pep-l]: https://www.python.org/dev/peps/pep-0008
 
 ## Summary
-`ampworks` is a collection of tools designed to visualize and process experimental battery data, with a focus on model-relevant analyses. It provides routines for degradation mode analysis, parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more. These routines provide key properties for life and physics-based models (e.g., SPM and P2D). Graphical user interfaces (GUIs) are available for some of the analyses. See a full list of the GUI-based applications by running `ampworks -h` in your terminal after installation. 
+`ampworks` is a collection of tools designed to visualize and process experimental battery data. It provides routines for degradation mode analysis, parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more. These routines provide key properties for life and physics-based models (e.g., SPM and P2D). Graphical user interfaces (GUIs) are available for some of the analyses. See a full list of the GUI-based applications by running `ampworks -h` in your terminal after installation. 
 
-This software is in early development (Alpha), and the API may change as it matures.
+Note: `ampworks` is in early development. The API may change as it matures.
 
 ## Installation
 `ampworks` can be installed from [PyPI](https://pypi.org/project/ampworks) using the following command:

@@ -25,10 +25,10 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'autoapi.extension',
     'myst_nb',
     'sphinx_design',
     'sphinx_copybutton',
+    'autoapi.extension',
 ]
 
 templates_path = ['_templates']
@@ -37,14 +37,14 @@ exclude_patterns = [
     'build',
     'Thumbs.db',
     '.DS_Store',
-    '*.ipynb_checkpoints',
     '__pycache__',
+    '*.ipynb_checkpoints',
 ]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
     '.myst': 'myst-nb',
+    '.ipynb': 'myst-nb',
+    '.rst': 'restructuredtext',
 }
 
 highlight_language = 'console'
@@ -148,10 +148,8 @@ dataset_keep = [
     'interactive_xy_plot',
 ]
 
-progbar_keep = [
-    'reset',
-    'set_progress',
-]
+richres_keep = ['copy']
+progbar_keep = ['reset', 'set_progress']
 
 
 def skip_util_classes(app, what, name, obj, skip, options):
@@ -162,12 +160,13 @@ def skip_util_classes(app, what, name, obj, skip, options):
         if name.split('.')[-1] not in dataset_keep:
             skip = True
             
+    elif what in what_kind and '.RichResult.' in name:  # no dict methods
+        if name.split('.')[-1] not in richres_keep:
+            skip = True
+            
     elif what in what_kind and '.ProgressBar.' in name:  # no tqdm methods
         if name.split('.')[-1] not in progbar_keep:
             skip = True
-            
-    elif what in what_kind and '.RichResult.' in name:  # no dict methods
-        skip = True
             
     return skip
             
