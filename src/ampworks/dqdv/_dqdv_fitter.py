@@ -26,6 +26,24 @@ class DqdvFitter:
     ) -> None:
         """
         Wrapper for dQdV fitting.
+        
+        Fits electrode stoichiometries to replicate the voltage response of a
+        full cell. Fitting relies on low-rate half-cell and full-cell charge
+        and/or discharge curves to approximate open-circuit potentials.
+        
+        Internally, data is automatically used to generate smooth splines for
+        the fitting routines. However, pre-processing to reduce noise in the
+        measurements is recommended to avoid instabilities in the fits and
+        derivative calculations.
+        
+        Note that reported stoichiometries x0/x1 are in reference to relative
+        states of charge. Furthermore, the values differ in meaning between the
+        negative and positive electrodes. xp0 and xp1 refer to the relative
+        measure of how *delithiated* the positive electrode is, whereas xn0 and
+        xn1 refer to how *lithiated* the negative electrode is. This concention
+        is used so that x0 < x1 in both electrodes. Furthermore, it allows x0
+        states to both refer to the SOC=0 state of the full cell and both x1
+        values to the SOC=1 state of the full cell.
 
         Parameters
         ----------
@@ -49,13 +67,9 @@ class DqdvFitter:
           is forced to 0. ``cost_terms`` can be modified after initialization
           via its property.
 
-        References
-        ----------
-        TODO
-
         """
 
-        self._initialized = {'neg': False, 'pos': False, 'cell': False}
+        self._initialized = {}
 
         self.neg = neg
         self.pos = pos
@@ -68,8 +82,9 @@ class DqdvFitter:
         """
         Get or set the negative electrode dataframe.
 
-        Columns must include both 'soc' for state of charge and 'voltage' for
-        the half-cell voltage. 'soc' should be normalized to [0, 1].
+        Columns must include 'Ah' for capacity and 'Volts' for the half-cell
+        voltage. All 'Ah' values must be positive, and there must be a zero
+        reference somewhere in the column.
 
         """
         return self._neg
@@ -77,15 +92,9 @@ class DqdvFitter:
     @neg.setter
     def neg(self, value: pd.DataFrame) -> None:
 
-        required = {'soc', 'voltage'}
-        if value is None:
-            pass
-        elif not isinstance(value, pd.DataFrame):
-            raise TypeError("'neg' must be type pd.DataFrame.")
-        elif not required.issubset(value.columns):
-            raise ValueError(f"'neg' is missing columns, {required=}.")
+        df = self._check_dataframe(value, 'neg')
 
-        self._neg = value
+        self._neg = None if df is None else df.copy()
         self._ocv_n, self._dvdq_n = self._build_splines(self._neg, 'neg')
 
     @property
@@ -93,8 +102,9 @@ class DqdvFitter:
         """
         Get or set the positive electrode dataframe.
 
-        Columns must include both 'soc' for state of charge and 'voltage' for
-        the half-cell voltage. 'soc' should be normalized to [0, 1].
+        Columns must include 'Ah' for capacity and 'Volts' for the half-cell
+        voltage. All 'Ah' values must be positive, and there must be a zero
+        reference somewhere in the column.
 
         """
         return self._pos
@@ -102,15 +112,9 @@ class DqdvFitter:
     @pos.setter
     def pos(self, value: pd.DataFrame) -> None:
 
-        required = {'soc', 'voltage'}
-        if value is None:
-            pass
-        elif not isinstance(value, pd.DataFrame):
-            raise TypeError("'pos' must be type pd.DataFrame.")
-        elif not required.issubset(value.columns):
-            raise ValueError(f"'pos' is missing columns, {required=}.")
+        df = self._check_dataframe(value, 'pos')
 
-        self._pos = value
+        self._pos = None if df is None else df.copy()
         self._ocv_p, self._dvdq_p = self._build_splines(self._pos, 'pos')
 
     @property
@@ -118,8 +122,9 @@ class DqdvFitter:
         """
         Get or set the full cell dataframe.
 
-        Columns must include both 'soc' for state of charge and 'voltage' for
-        the half-cell voltage. 'soc' should be normalized to [0, 1].
+        Columns must include 'Ah' for capacity and 'Volts' for the full-cell
+        voltage. All 'Ah' values must be positive, and there must be a zero
+        reference somewhere in the column.
 
         """
         return self._cell
@@ -127,15 +132,9 @@ class DqdvFitter:
     @cell.setter
     def cell(self, value: pd.DataFrame) -> None:
 
-        required = {'soc', 'voltage'}
-        if value is None:
-            pass
-        elif not isinstance(value, pd.DataFrame):
-            raise TypeError("'cell' must be type pd.DataFrame.")
-        elif not required.issubset(value.columns):
-            raise ValueError(f"'cell' is missing columns, {required=}.")
+        df = self._check_dataframe(value, 'cell')
 
-        self._cell = value
+        self._cell = None if df is None else df.copy()
         self._ocv_c, self._dvdq_c = self._build_splines(self._cell, 'cell')
 
         if self._initialized['cell']:
@@ -170,15 +169,53 @@ class DqdvFitter:
 
         if len(value) == 0:
             raise ValueError("cost_terms is empty. Set to either 'all' or a"
-                             f"subset of of {options}.")
+                             f" subset of of {options}.")
 
         if not set(value).issubset(options):
             raise ValueError("cost_terms has at least one invalid value. It"
                              f" can only be 'all' or a subset of {options}.")
 
         self._cost_terms = value
+        
+    def _check_dataframe(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
+        """
+        Verify that input dataframes have 'Ah' and 'Volts' columns.
 
-    def _build_splines(self, df: pd.DataFrame, domain: str) -> Callable:
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Data to check for required 'Ah' and 'Volts' columns.
+        which : {'neg', 'pos', 'cell'}
+            Which splines to build. Used to track initialization.
+
+        Returns
+        -------
+        df : None or pd.DataFrame
+            None if dataset has not yet been initialized. Otherwise, pass the
+            error checks and return the input DataFrame.
+
+        Raises
+        ------
+        TypeError
+            The 'df' input must be type pd.DataFrame.
+        ValueError
+            'df' is missing columns, required={'Ah', 'Volts'}.
+            
+        """
+        
+        self._initialized[which] = False
+        
+        required = {'soc', 'voltage'}
+        if df is None:
+            pass
+        elif not isinstance(df, pd.DataFrame):
+            raise TypeError(f"'{which}' must be type pd.DataFrame.")
+        elif not required.issubset(df.columns):
+            raise ValueError(f"'{which}' is missing columns, {required=}.")
+        
+        return df
+        
+    def _build_splines(self, df: pd.DataFrame, which: str) -> Callable:
         """
         Generate OCV interpolation functions.
 
@@ -186,9 +223,8 @@ class DqdvFitter:
         ----------
         df : pd.DataFrame
             Data with 'soc' and 'voltage' columns.
-        domain : str
-            Which domain splines are being built, from ['neg', 'pos', 'cell'].
-            Used to track when initialization is complete.
+        which : {'neg', 'pos', 'cell'}
+            Which splines to build. Used to track initialization.
 
         Returns
         -------
@@ -207,7 +243,7 @@ class DqdvFitter:
         ocv = interp.make_splrep(df.soc, df.voltage)
         dvdq = ocv.derivative()
 
-        self._initialized[domain] = True
+        self._initialized[which] = True
 
         return ocv, dvdq
 
@@ -251,7 +287,7 @@ class DqdvFitter:
 
         errs = self.err_terms(params)
 
-        err_total = 0.  # faster when MAP is fractional, so use (*1e-2) below
+        err_total = 0.  # faster when MAPE is fractional, so use (*1e-2) below
         if 'voltage' in self.cost_terms:
             err_total += errs['volt_err']*1e-2
         if 'dqdv' in self.cost_terms:
@@ -261,16 +297,17 @@ class DqdvFitter:
 
         return err_total
 
-    def get_ocv(self, domain: str, soc: npt.ArrayLike) -> npt.ArrayLike:
+    def get_ocv(self, which: str, soc: npt.ArrayLike) -> npt.ArrayLike:
         """
-        Evaluate the OCV spline for the specified domain.
+        Evaluate an OCV spline.
 
         Parameters
         ----------
-        domain : {'neg', 'pos', 'cell'}
+        which : {'neg', 'pos', 'cell'}
             Which OCV spline to evaluate.
-        x : ArrayLike
-            Stoichiometry or SOC values to evaluate at.
+        soc : ArrayLike
+            Relative state-of-charge values, between [0, 1], to evaluate at.
+            See notes for more information.
 
         Returns
         -------
@@ -280,32 +317,51 @@ class DqdvFitter:
         Raises
         ------
         ValueError
-            'domain' must be in ['neg', 'pos', 'cell'].
+            'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
+            
+        Notes
+        -----
+        Due to the internally storage of the half-cell data and splines, the
+        OCV curves returned by this method are in opposite orders. Plotting the
+        full [0, 1] window for the negative electrode will provide a curve with
+        decreasing voltage from zero to 1 because x0/x1 refer to the state of
+        how lithiated the negative electrode is. In contrast, the positive
+        electrode OCV will return a curve with increasing potential because the
+        fitted x0/x1 are in reference to how delithiated the positive electrode
+        is. Evaluating the full cell curve also provides a curve with increasing
+        voltage because the input is inpretted as the state of charge for the
+        full cell. Values returned by all fitting routines are consistent with
+        this orientation, and users can access the voltage windows of individual
+        electrode potentials by passing the appropriate sections of the fitted
+        x0/x1 values. For example, use ``get_ocv(fit_result.x[0:2])`` for the
+        negative electrode and ``get_ocv(fit_result[2:4])`` for the positive
+        electrode. 
 
         """
 
-        if domain not in ['neg', 'pos', 'cell']:
-            raise ValueError("'domain' must be in ['neg', 'pos', 'cell'].")
+        if which not in ['neg', 'pos', 'cell']:
+            raise ValueError("'which' must be in ['neg', 'pos', 'cell'].")
 
-        spline = getattr(self, f"_ocv_{domain[0]}")
+        spline = getattr(self, f"_ocv_{which[0]}")
         if spline is None:
-            raise RuntimeError(f"'{domain}' splines are not constructed yet."
-                               f" Set the '{domain}' property first.")
+            raise RuntimeError(f"'{which}' splines are not constructed yet."
+                               f" Set the '{which}' property first.")
 
         return spline(soc)
 
-    def get_dvdq(self, domain: str, soc: npt.ArrayLike) -> npt.ArrayLike:
+    def get_dvdq(self, which: str, soc: npt.ArrayLike) -> npt.ArrayLike:
         """
-        Evaluate the dvdq spline for the specified domain.
+        Evaluate a dvdq spline.
 
         Parameters
         ----------
-        domain : {'neg', 'pos', 'cell'}
+        which : {'neg', 'pos', 'cell'}
             Which dvdq spline to evaluate.
-        x : ArrayLike
-            Stoichiometry or SOC values to evaluate at.
+        soc : ArrayLike
+            Relative state-of-charge values, between [0, 1], to evaluate at.
+            See notes for more information.
 
         Returns
         -------
@@ -315,32 +371,39 @@ class DqdvFitter:
         Raises
         ------
         ValueError
-            'domain' must be in ['neg', 'pos', 'cell'].
+            'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
+            
+        Notes
+        -----
+        The individual electrode datasets and splines are internally stored in
+        opposite directions of one another. See the ``get_ocv`` method for more
+        information to ensure you are evaluating each in the correct directions.
 
         """
 
-        if domain not in ['neg', 'pos', 'cell']:
-            raise ValueError("'domain' must be in ['neg', 'pos', 'cell'].")
+        if which not in ['neg', 'pos', 'cell']:
+            raise ValueError("'which' must be in ['neg', 'pos', 'cell'].")
 
-        spline = getattr(self, f"_dvdq_{domain[0]}")
+        spline = getattr(self, f"_dvdq_{which[0]}")
         if spline is None:
-            raise RuntimeError(f"'{domain}' splines are not constructed yet."
-                               f" Set the '{domain}' property first.")
+            raise RuntimeError(f"'{which}' splines are not constructed yet."
+                               f" Set the '{which}' property first.")
 
         return spline(soc)
 
-    def get_dqdv(self, domain: str, soc: npt.ArrayLike) -> npt.ArrayLike:
+    def get_dqdv(self, which: str, soc: npt.ArrayLike) -> npt.ArrayLike:
         """
-        Evaluate the dqdv spline for the specified domain.
+        Evaluate a dqdv spline.
 
         Parameters
         ----------
-        domain : {'neg', 'pos', 'cell'}
+        which : {'neg', 'pos', 'cell'}
             Which dqdv spline to evaluate.
-        x : ArrayLike
-            Stoichiometry or SOC values to evaluate at.
+        soc : ArrayLike
+            Relative state-of-charge values, between [0, 1], to evaluate at.
+            See notes for more information.
 
         Returns
         -------
@@ -350,32 +413,38 @@ class DqdvFitter:
         Raises
         ------
         ValueError
-            'domain' must be in ['neg', 'pos', 'cell'].
+            'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
+            
+        Notes
+        -----
+        The individual electrode datasets and splines are internally stored in
+        opposite directions of one another. See the ``get_ocv`` method for more
+        information to ensure you are evaluating each in the correct directions.
 
         """
-        return 1 / self.get_dvdq(domain, soc)
+        return 1 / self.get_dvdq(which, soc)
 
     def err_terms(self, params: npt.ArrayLike) -> RichResult:
         """
-        Calculate error between the fit and data.
+        Calculate errors between the fit and data.
 
         Parameters
         ----------
         params : ArrayLike, shape(n,)
             Array for xn0, xn1, xp0, xp1, and iR (optional). If you already
-            performed a fit you can simply use ``summary.x``.
+            performed a fit you can simply use ``fit_result.x``.
 
         Returns
         -------
         errs : RichResult
-            Voltage, dqdv, and dvdq errors. The soc, fit, and data arrays are
-            also included for convenience and plotting.
+            Voltage, dqdv, and dvdq errors. soc, fit, and data arrays are also
+            included for convenience and plotting.
 
         Notes
         -----
-        Error are calculated as mean absolute percent errors between the data
+        Errors are calculated as mean absolute percent errors between the data
         and fits. The normalization reduces preferences to fit any one cost
         term over others when more than one is considered. It also removes any
         units so it is more mathematically correct to sum the errors.
@@ -407,20 +476,29 @@ class DqdvFitter:
         volt_data = self._volt_data
         dqdv_data = self._dqdv_data
         dvdq_data = self._dvdq_data
-
+        
         volt_err = np.mean(np.abs((volt_fit - volt_data) / volt_data))
         dqdv_err = np.mean(np.abs((dqdv_fit - dqdv_data) / dqdv_data))
         dvdq_err = np.mean(np.abs((dvdq_fit - dvdq_data) / dvdq_data))
+        
+        # attempt at using relative MSE, non-trivial to figure out scaling...
+        # volt_scale = np.maximum(volt_data, volt_data.mean())
+        # dqdv_scale = np.maximum(dqdv_data, dqdv_data.mean())
+        # dvdq_scale = np.maximum(dvdq_data, dvdq_data.mean())
 
+        # volt_err = np.mean(((volt_fit - volt_data) / volt_scale)**2)
+        # dqdv_err = np.mean(((dqdv_fit - dqdv_data) / dqdv_scale)**2)
+        # dvdq_err = np.mean(((dvdq_fit - dvdq_data) / dvdq_scale)**2)
+        
         errs = RichResult(
             soc=self._soc,
-            volt_err=volt_err*100,
+            volt_err=volt_err*100.,
             volt_fit=volt_fit,
             volt_data=volt_data,
-            dqdv_err=dqdv_err*100,
+            dqdv_err=dqdv_err*100.,
             dqdv_fit=dqdv_fit,
             dqdv_data=dqdv_data,
-            dvdq_err=dvdq_err*100,
+            dvdq_err=dvdq_err*100.,
             dvdq_fit=dvdq_fit,
             dvdq_data=dvdq_data,
         )
@@ -440,7 +518,7 @@ class DqdvFitter:
 
         Returns
         -------
-        summary : dict
+        fit_result : :class:`~ampworks.dqdv.DqdvFitResult`
             Summarized results from the grid search.
 
         """
@@ -467,7 +545,7 @@ class DqdvFitter:
         index = np.argmin(errs)
         x_opt = np.fromiter(valid_ps[index].values(), dtype=float)
 
-        summary = DqdvFitResult(
+        fit_result = DqdvFitResult(
             success=True,
             message='Done searching.',
             nfev=len(errs),
@@ -478,11 +556,11 @@ class DqdvFitter:
             x_map=names,
         )
 
-        return summary
+        return fit_result
 
     def constrained_fit(
         self, x0: npt.ArrayLike, bounds: float | list[float] = 0.1,
-        xtol: float = 1e-8, maxiter: int = 1e5, return_full: bool = False,
+        xtol: float = 1e-8, maxiter: int = 100000, return_full: bool = False,
     ) -> DqdvFitResult:
         """
         Run a trust-constrained local optimization routine to minimize error
@@ -492,7 +570,7 @@ class DqdvFitter:
         ----------
         x0 : ArrayLike, shape(n,)
             Initial xn0, xn1, xp0, xp1, and optionally iR. If you already ran
-            a previous fit you can simply use ``summary.x``.
+            a previous fit you can simply use ``fit_result.x``.
         bounds : float or list[float], optional
             Symmetric parameter bounds (excludes iR). A float (default=0.1)
             applies to all. Use lists for per-x values. See notes for more info.
@@ -506,10 +584,10 @@ class DqdvFitter:
 
         Returns
         -------
-        summary : DqdvFitResult
+        fit_result : :class:`~ampworks.dqdv.DqdvFitResult`
             A subset summary of SciPy's optimization results, including an added
             approximate standard deviation for the pameters.
-        optresult : OptimizeResult
+        opt_result : OptimizeResult
             Full result form SciPy. Does not include standard deviation info.
             Only returned if ``return_full=True``.
 
@@ -517,24 +595,34 @@ class DqdvFitter:
         -----
         Bound indices correspond to xn0, xn1, xp0, and xp1, where 0 and 1 are
         in reference to lower and upper stoichiometries of the negative (n)
-        and positive (p) electrodes. Set ``bounds[i] = 1`` to disable bounds and
-        use the full interval [0, 1] for x[i]. If an ``x[i] +/- bounds[i]``
+        and positive (p) electrodes. Set ``bounds[i] = 1`` to disable bounds
+        and use the full interval [0, 1] for x[i]. If an ``x[i] +/- bounds[i]``
         exceeds [0, 1], the lower and/or upper bounds will be corrected to 0
         and/or 1, respectively. Furthermore, bounds are clipped to be between
         0.001 and 1 behind the scenes. It does not help to use values outside
         this range.
 
-        The ``summary`` output contains uncertainty estimates for the fitted
+        The ``fit_result`` output contains uncertainty estimates for the fitted
         parameters. These are approximated from the numerical Hessian at the
         optimum. The method assumes the function is locally linear, the input
         errors are independent and small, and the fit is well-behaved. Notes
-        on the method are available `here <https://max.pm/posts/hessian_ls/>`.
-
-        Because these assumptions do not always hold, the uncertainties can
-        sometimes appear large or misleading, even when the fit is good. The
-        estimates also depend on the quality of the data and the fit. Users
-        should judge when to trust the uncertainty values, based on fit quality
-        and the relative magnitudes of the reported estimates.
+        on the method are available `here <std-notes>_`_. These bounds provide
+        more of a heuristic interpretation of the confidence intervals rather
+        than a statistical interpretation. This is because all fitting routines
+        use a mean absolute percent error (MAPE) function, but the uncertainty
+        approximation needs a sum of squared residuals error function.
+        
+        Since two different error functions are used between the fit and the
+        uncertainty estimates, they are not directly linked. However, using the
+        combination of these two functions has empirically provided consistent
+        convergence and reasonable uncertainties across a broad range of data
+        sets. We highlight the details of the methods here and leave it to the
+        user to interpret and decide whether or not to belience and/or use the
+        uncertainty estimates.
+        
+        .. _std-notes:
+            https://kitchingroup.cheme.cmu.edu/pycse/book/
+            12-nonlinear-regression-2.html
 
         """
         from numdifftools import Hessian
@@ -591,68 +679,68 @@ class DqdvFitter:
             'maxiter': maxiter,
         }
 
-        warnings.filterwarnings('ignore')
+        warnings.filterwarnings('ignore', 'delta_grad == 0.0')
 
-        result = opt.minimize(self._err_func, x0, method='trust-constr',
-                              bounds=bounds, constraints=constraints,
-                              options=options)
+        opt_result = opt.minimize(self._err_func, x0, method='trust-constr',
+                                  bounds=bounds, constraints=constraints,
+                                  options=options)
 
         warnings.filterwarnings('default')
 
-        # Use Hessian to approximate variance, standard deviation. This follows
-        #     notes from https://max.pm/posts/hessian_ls/. The added scaling
-        #     helps make sure the inversion is stable (non singular).
-
-        def bounded_ssr(x):  # sum of squared residuals
-
+        # Use Hessian to approximate variance. Requires SSR error function.
+        # An added diagonal scaling stabalizes inversion (avoids non-singular).
+        
+        def ssr(x: npt.ArrayLike) -> float:  # sum of squared residuals
+            
             errs = self.err_terms(x)
 
-            volt_err = (errs['volt_fit'] - self._volt_data)**2
-            dqdv_err = (errs['dqdv_fit'] - self._dqdv_data)**2
-            dvdq_err = (errs['dvdq_fit'] - self._dvdq_data)**2
+            volt_err = np.sum((errs['volt_fit'] - errs['volt_data'])**2)
+            dqdv_err = np.sum((errs['dqdv_fit'] - errs['dqdv_data'])**2)
+            dvdq_err = np.sum((errs['dvdq_fit'] - errs['dvdq_data'])**2)
 
             ssr = 0.
             if 'voltage' in self.cost_terms:
-                ssr += volt_err.sum()
+                ssr += volt_err
             if 'dqdv' in self.cost_terms:
-                ssr += dqdv_err.sum()
+                ssr += dqdv_err
             if 'dvdq' in self.cost_terms:
-                ssr += dvdq_err.sum()
+                ssr += dvdq_err
 
             return ssr
 
-        result.hess = Hessian(bounded_ssr)(result.x)
+        opt_result.hess = Hessian(ssr)(opt_result.x)
 
-        evals, _ = np.linalg.eig(result.hess)
+        evals, _ = np.linalg.eig(opt_result.hess)
         scale = 1e-16*np.max(np.abs(evals))
 
         try:
-            cov = np.linalg.inv(result.hess + scale*np.eye(result.x.size))
-            std = np.sqrt(np.abs(np.diag(cov)))
+            size = opt_result.x.size
+            cov = np.linalg.inv(opt_result.hess + scale*np.eye(size))
+            std = np.sqrt(0.5*np.abs(np.diag(cov)))
         except Exception:
             std = None
 
         if 'voltage' not in self.cost_terms:
-            result.x[-1] = 0.
+            opt_result.x[-1] = 0.
 
             if std is not None:
                 std[-1] = 0.
 
-        summary = DqdvFitResult(
-            success=result.success,
-            message=result.message,
-            nfev=result.nfev,
-            niter=result.niter,
-            fun=result.fun,
-            x=result.x,
+        fit_result = DqdvFitResult(
+            success=opt_result.success,
+            message=opt_result.message,
+            nfev=opt_result.nfev,
+            niter=opt_result.niter,
+            fun=opt_result.fun,
+            x=opt_result.x,
             x_std=std,
             x_map=['xn0', 'xn1', 'xp0', 'xp1', 'iR'],
         )
 
         if return_full:
-            return summary, result
+            return fit_result, opt_result
 
-        return summary
+        return fit_result
 
     def plot(self, params: npt.ArrayLike) -> None:
         """
@@ -662,11 +750,7 @@ class DqdvFitter:
         ----------
         params : ArrayLike, shape(n,)
             Array for xn0, xn1, xp0, xp1, and iR (optional). If you already
-            performed a fit you can simply use ``summary.x``.
-
-        Returns
-        -------
-        None.
+            performed a fit you can simply use ``fit_result.x``.
 
         """
         from ampworks.utils import _ExitHandler
@@ -714,7 +798,7 @@ class DqdvFitter:
         ax1.axvline(0., linestyle='--', color='grey')
         ax1.axvline(1., linestyle='--', color='grey')
 
-        add_text(ax1, 0.5, 0.06, f"MAP={errs['volt_err']:.2e}%", ha='center')
+        add_text(ax1, 0.5, 0.06, f"MAPE={errs['volt_err']:.2e}%", ha='center')
 
         ax1.set_xlabel(r"q [$-$]")
         ax1.set_ylabel(r"Voltage (pos/cell) [V]")
@@ -727,7 +811,7 @@ class DqdvFitter:
         ax2.plot(errs['soc'], errs['dqdv_fit'], zorder=10, **mstyle)
         ax2.plot(errs['soc'][::3], errs['dqdv_data'][::3], **dstyle)
 
-        add_text(ax2, 0.6, 0.85, f"MAP={errs['dqdv_err']:.2e}%")
+        add_text(ax2, 0.6, 0.85, f"MAPE={errs['dqdv_err']:.2e}%")
 
         ax2.set_xticklabels([])
         ax2.set_ylabel(r"dq/dV [1/V]")
@@ -736,7 +820,7 @@ class DqdvFitter:
         ax3.plot(errs['soc'], errs['dvdq_fit'], zorder=10, **mstyle)
         ax3.plot(errs['soc'][::3], errs['dvdq_data'][::3], **dstyle)
 
-        add_text(ax3, 0.6, 0.85, f"MAP={errs['dvdq_err']:.2e}%")
+        add_text(ax3, 0.6, 0.85, f"MAPE={errs['dvdq_err']:.2e}%")
 
         ax3.set_xlabel(r"q [$-$]")
         ax3.set_ylabel(r"dV/dq [V]")
@@ -751,4 +835,4 @@ class DqdvFitter:
         for ax in [twin, ax2, ax3]:
             format_ticks(ax, xdiv=2, ydiv=2)
 
-        _ExitHandler(plt.show)
+        _ExitHandler.register_atexit(plt.show)

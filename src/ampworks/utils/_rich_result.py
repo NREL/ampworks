@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 
@@ -113,13 +113,13 @@ class RichResult(dict):
         """List available attributes, corresponding to dictionary keys."""
         return list(self.keys())
 
-    def copy(self) -> RichResult:
+    def copy(self) -> Self:
         """
         Returns a copy of the instance.
 
         Returns
         -------
-        RichResult
+        result : Self
             A deep copy of the current instance. Does not share any memory with
             the original instance.
 

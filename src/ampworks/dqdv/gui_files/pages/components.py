@@ -103,8 +103,11 @@ column_defs = [
         'headerCheckboxSelection': True,
     },
     *[
-        {'headerName': f"{c}", 'field': f"{c}"}
-        for c in ['xn0', 'xn1', 'xp0', 'xp1', 'iR', 'fun']
+        {'headerName': f"{c}", 'field': f"{c}", 'minWidth': 100}
+        for c in [
+            'Ah', 'xn0', 'xn0_std', 'xn1', 'xn1_std', 'xp0', 'xp0_std', 'xp1',
+            'xp1_std', 'iR', 'iR_std', 'fun', 'success', 'message',
+        ]
     ],
 ]
 

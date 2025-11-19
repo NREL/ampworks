@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover
     from pathlib import Path
-    from typing import Any, Sequence
+    from typing import Any, Self, Sequence
     from pandas import Series, DataFrame
 
 
@@ -88,9 +88,29 @@ class RichTable:
     def __repr__(self) -> str:
         """Return the string representation of the underlying DataFrame."""
         return repr(self._df)
+    
+    @classmethod
+    def _validate_columns(cls, df: DataFrame) -> None:
+        """
+        Ensure that all required columns are present.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The input DataFrame to validate during initialization.
+
+        Raises
+        ------
+        ValueError
+            If any columns listed in ``_required_cols`` are missing.
+
+        """
+        required = set(cls._required_cols)
+        if not required.issubset(df.columns):
+            raise ValueError(f"Missing columns, {required=}.")
 
     @classmethod
-    def from_csv(cls, path: str | Path) -> RichTable:
+    def from_csv(cls, path: str | Path) -> Self:
         """
         Create a new instance from a CSV file.
 
@@ -101,13 +121,20 @@ class RichTable:
 
         Returns
         -------
-        RichTable
+        table : Self
             A new instance initialized with data from the file.
 
         """
         from pandas import read_csv
         df = read_csv(path)
-        return cls(df)
+        
+        try:
+            return cls(df)
+        except TypeError:
+            instance = cls()
+            if hasattr(instance, '_df'):
+                instance._df = df
+            return instance
 
     @property
     def df(self) -> DataFrame:
@@ -126,34 +153,14 @@ class RichTable:
         """
         self._df.to_csv(path, index=False)
 
-    def _validate_columns(self, df: DataFrame) -> None:
-        """
-        Ensure that all required columns are present.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            The input DataFrame to validate during initialization.
-
-        Raises
-        ------
-        ValueError
-            If any columns listed in ``_required_cols`` are missing.
-
-        """
-        missing = [c for c in self._required_cols if c not in df.columns]
-        if missing:
-            raise ValueError(f"Missing required columns: {missing}")
-
-    def copy(self) -> RichTable:
+    def copy(self) -> Self:
         """
         Returns a copy of the instance.
 
         Returns
         -------
-        RichTable
-            A deep copy of the current instance. Does not share any memory with
-            the original instance.
+        table : Self
+            A deep copy of the instance. Does not share memory with original.
 
         """
         from copy import deepcopy

@@ -32,15 +32,14 @@ class Timer:
 
         .. code-block:: python
 
-        import time
-        from ampworks.utils import Timer
+            import time
+            from ampworks.utils import Timer
 
-        def function(sleep_time: float) -> None:
-            time.sleep(sleep_time)
+            def function(sleep_time: float) -> None:
+                time.sleep(sleep_time)
 
-        with Timer():
-            function(2.)
-
+            with Timer():
+                function(2.)
 
         """
 

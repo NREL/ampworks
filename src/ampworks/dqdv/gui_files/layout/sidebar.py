@@ -5,6 +5,7 @@ import dash
 import numpy as np
 import pandas as pd
 import ampworks as amp
+import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 from dash import dcc, html, Output, Input, State
@@ -219,7 +220,7 @@ def line_properties(label, identifier, values):
 
 def marker_properties(label, identifier, values):
     markstyles = dict((v, v) for v in ['circle', 'square', 'diamond'])
-    marksizes = dict((v, v) for v in [5, 10, 15, 20, 25])
+    marksizes = dict((v, v) for v in [1, 2, 3, 4, 5])
 
     id_style = 'mk-' + identifier
     id_size = 'ms-' + identifier
@@ -257,7 +258,7 @@ def marker_properties(label, identifier, values):
 
 neg_style = ['solid', 2, '#1f77b4']
 pos_style = ['solid', 2, '#d62728']
-cell_style = ['circle', 10, '#c5c5c5']
+cell_style = ['circle', 2, '#c5c5c5']
 model_style = ['solid', 2, '#000000']
 
 fig_menu = html.Div(
@@ -457,9 +458,9 @@ def make_figure(params, flags, new_data=False):
     figure.data[4].y = dqdv_fit
     figure.data[5].y = dvdq_fit
 
-    figure.layout.annotations[0].text = f"MAP={volt_err:.2e}%"
-    figure.layout.annotations[1].text = f"MAP={dqdv_err:.2e}%"
-    figure.layout.annotations[2].text = f"MAP={dvdq_err:.2e}%"
+    figure.layout.annotations[0].text = f"MAPE={volt_err:.2e}%"
+    figure.layout.annotations[1].text = f"MAPE={dqdv_err:.2e}%"
+    figure.layout.annotations[2].text = f"MAPE={dvdq_err:.2e}%"
 
     figure.data[6].x = socp
     figure.data[6].y = ocv_p
@@ -579,24 +580,24 @@ def update_on_button(_c, _m, neg_s, pos_s, opt_data, flags):
 
     fitter.cost_terms = cost_terms
 
-    summary = {}
+    fit_result = {}
     if trigger == 'grid-btn' and _c and all(flags.values()):
-        summary = fitter.grid_search(opt_data['grid-Nx'])
-        params = summary['x']
+        fit_result = fitter.grid_search(opt_data['grid-Nx'])
+        params = fit_result['x']
     elif trigger == 'min-err-btn' and _m and all(flags.values()):
         x0 = np.array(neg_s + pos_s)
-        summary = fitter.constrained_fit(x0, **options)
-        params = summary['x']
+        fit_result = fitter.constrained_fit(x0, **options)
+        params = fit_result['x']
     else:
         params = np.array(neg_s + pos_s)
 
     optimal_params = params.copy()
 
-    if summary:
-        x = np.round(summary['x'], 2)
+    if fit_result:
+        x = np.round(fit_result['x'], 2)
         neg_s, pos_s = list(x[0:2]), list(x[2:4])
 
-    return '', neg_s, pos_s, summary
+    return '', neg_s, pos_s, fit_result
 
 
 @dash.callback(
@@ -610,7 +611,7 @@ def toggle_theme_switch(switch_on, flags):
     if not all(flags.values()):
         return placeholder_fig
 
-    bg_color = 'white' if switch_on else 'lightgrey'
+    bg_color = 'white' if switch_on else '#F5F5F5'
 
     figure.update_layout(
         plot_bgcolor=bg_color,
@@ -631,10 +632,10 @@ def toggle_theme_switch(switch_on, flags):
     prevent_initial_call=True,
 )
 def update_cell_styles(mk, ms, clr, flags):
-
+    
     for i in range(0, 3):
         figure.data[i].marker.symbol = mk
-        figure.data[i].marker.size = int(ms)
+        figure.data[i].marker.size = 6 + 2*(int(ms) - 1)
         figure.data[i].marker.color = clr
 
     if not all(flags.values()):

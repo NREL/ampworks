@@ -46,23 +46,18 @@ def list_datasets() -> list[str]:
     return os.listdir(resources)
 
 
-def download_all(path: str | None = None) -> None:
+def download_all(path: str | os.PathLike | None = None) -> None:
     """
     Copy example datasets into a local directory.
 
     Parameters
     ----------
-    path : str or None, optional
+    path : str or PathLike or None, optional
         Path to parent directory where a new ``ampworks_datasets`` folder will
         be created and example datasets will be copied to. If None (default),
         the current working directory is used.
 
-    Returns
-    -------
-    None.
-
     """
-
     resources = pathlib.Path(os.path.dirname(__file__), 'resources')
 
     path = pathlib.Path(path or '.').joinpath('ampworks_datasets')

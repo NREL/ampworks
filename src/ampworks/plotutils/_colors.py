@@ -24,10 +24,6 @@ class ColorMap:
         norm : tuple[float], optional
             2-tuple of (min, max) values used for normalization.
 
-        Returns
-        -------
-        None.
-
         Raises
         ------
         ValueError

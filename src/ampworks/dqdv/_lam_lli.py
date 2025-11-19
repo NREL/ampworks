@@ -9,15 +9,16 @@ if TYPE_CHECKING:  # pragma: no cover
     from ._tables import DegModeTable, DqdvFitTable
 
 
-def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
+def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
     r"""
-    Calculate aging parameters.
+    Calculate degradation modes.
 
     Uses full cell capacity and fitted x0/x1 values from dqdv/dvdq fits to
     calculate theoretical electrode capacities, loss of active material (LAM),
-    and loss of lithium inventory (LLI).
+    and loss of lithium inventory (LLI). The calculations are summarized below.
+    For more detail and discussion, please refer to [1]_.
 
-    Electrode capacities (Q) and losses of active material (LAM) are
+    Electrode capacities (Q) and loss of active material (LAM) are
 
     .. math::
 
@@ -30,7 +31,7 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
 
     .. math::
 
-        {\rm Inv} = x_{1,n}Q_{n} + x_{1,p}Q_{p}, \quad \quad
+        {\rm Inv} = x_{0,n}Q_{n} + (1 - x_{0,p})Q_{p}, \quad \quad
         {\rm LLI} = 1 - \frac{\rm Inv}{\rm Inv[0]},
 
     where :math:`{\rm Inv}` is the total lithium inventories using capacities
@@ -40,11 +41,15 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
     come from first-order Taylor series assumptions. If you trust your x0/x1
     fits but see large or inconsistent uncertainties then it is also safe to
     trust the LAM/LLI values, but you may want to neglect LAM/LLI uncertainties.
+    Note that ``(1 - xp0)`` is used instead of just ``xp0`` because x0 refers
+    to the delithiated state of the positive electrode whereas ``xn0`` refers
+    to the lithiated state of the negative electrode, and does not require the
+    same inversion.
 
     Parameters
     ----------
-    fit_result : DqdvFitResult
-        Results containing the fitted x0/x1 values from dqdv/dvdq fits.
+    fit_table : DqdvFitTable
+        Table containing rows for fitted x0/x1 values from dqdv/dvdq fits.
 
     Returns
     -------
@@ -52,12 +57,21 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
         Electrode capacities (Q) and loss of active material (LAM) for the
         negative (n) and positive (p) electrodes, and loss of lithium inventory
         (LLI). Capacities are in Ah. All other outputs are unitless.
+        
+    See Also
+    --------
+    ~ampworks.dqdv.DqdvFitter : Access to fitting routines.
+        
+    References
+    ----------
+    .. [1] A. Weng, J. B. Siegel, and A. Stefanopoulou, "Differential voltage
+       analysis for battery manufacturing process control," Frontiers in Energy
+       Research, 2023, DOI: 10.3389/fenrg.2023.1087269
 
     """
+    from ampworks.dqdv._tables import DegModeTable
 
-    from ._tables import DegModeTable
-
-    df = fit_result.df.copy()
+    df = fit_table.df.copy()
 
     Ah = df.Ah.to_numpy()
 
@@ -81,14 +95,14 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
     LAMn_std = Qn_std / Qn[0]
     LAMp_std = Qp_std / Qp[0]
 
-    inv = xn1*Qn + (1. - xp1)*Qp
+    inv = xn0*Qn + (1. - xp0)*Qp
     LLI = 1. - inv / inv[0]
 
     inv_std = np.sqrt(
-        (xn1*dQn*xn0_std)**2                  # contribution from xn0
-        + ((Qn + xn1*dQn)*xn1_std)**2           # contribution from xn1
-        + ((1 - xp1)*dQn*xp0_std)**2            # contribution from xp0
-        + ((-Qp + (1 - xp1)*dQp)*xn1_std)**2    # contribution from xp1
+          ((Qn + xn0*dQn)*xn0_std)**2           # contribution from xn0
+        + ((xn0*dQn)*xn1_std)**2                # contribution from xn1
+        + ((-Qp + (1. - xp0)*dQp)*xp0_std)**2   # contribution from xp0
+        + (((1. - xp0)*dQp)*xn1_std)**2         # contribution from xp1
     )
 
     LLI_std = inv_std / inv[0]
@@ -104,13 +118,37 @@ def calc_lam_lli(fit_result: DqdvFitTable) -> pd.DataFrame:
     return DegModeTable(aging)
 
 
-def plot_lam_lli(aging_table: DegModeTable, fit_table: DqdvFitTable,
+def plot_lam_lli(deg_table: DegModeTable, fit_table: DqdvFitTable,
                  x_col: str | None = None, std: bool = True) -> None:
+    """
+    Plot degradation modes.
 
+    Parameters
+    ----------
+    deg_table : DegModeTable
+        Container holding calculated degradation modes (LAM and LLI).
+    fit_table : DqdvFitTable
+        Container holding results from corresponding dQdV fits. Used to get
+        full cell capacity, and access to optional ``extra_cols``.
+    x_col : str | None, optional
+        A column name from 'fit_table` to use for the x-axis. If None (default)
+        then the row indices are used.
+    std : bool, optional
+        If True (default), includes estimated error bands for +/- one standard
+        deviation. NaN values will result in missing bands at those points.
+        
+    See Also
+    --------
+    ~ampworks.dqdv.DqdvFitter : Access to the fitting routines.
+    ~ampworks.dqdv.DqdvFitTable : Required container to store multiple fits.
+    ~ampworks.dqdv.DegModeTable : Table of calculated degradation modes.
+    ~ampworks.dqdv.calc_lam_lli : Calculate degradation modes before plottting.
+        
+    """
     from ampworks.utils import _ExitHandler
     from ampworks.plotutils import format_ticks
 
-    df = pd.concat([aging_table.df, fit_table.df], axis=1)
+    df = pd.concat([deg_table.df, fit_table.df], axis=1)
 
     if x_col is None:
         xplt, xlabel = df.index, 'Index'
@@ -120,7 +158,7 @@ def plot_lam_lli(aging_table: DegModeTable, fit_table: DqdvFitTable,
     shaded = {'alpha': 0.2, 'color': 'C0'}
 
     _, axs = plt.subplots(
-        2, 3, figsize=[9.0, 3.5], sharex=True, constrained_layout=True,
+        2, 3, figsize=[9.0, 3.75], sharex=True, constrained_layout=True,
     )
 
     df.plot(
@@ -158,4 +196,4 @@ def plot_lam_lli(aging_table: DegModeTable, fit_table: DqdvFitTable,
     # formatting
     format_ticks(axs, xdiv=2, ydiv=2)
 
-    _ExitHandler(plt.show)
+    _ExitHandler.register_atexit(plt.show)

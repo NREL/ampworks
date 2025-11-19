@@ -27,10 +27,6 @@ def add_text(ax: Axes, xloc: float, yloc: float, text: str,
         Vertical alignment relative to (xloc, yloc). Must be in {'baseline',
         'bottom', 'center', 'center_baseline', 'top'}. By default 'center'.
 
-    Returns
-    -------
-    None.
-
     """
 
     ax.text(xloc, yloc, text, ha=ha, va=va, transform=ax.transAxes)

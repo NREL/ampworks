@@ -72,20 +72,26 @@ def update_terminal(summary):
 )
 def log_new_row(_, current_data, summary, filename):
 
-    print(current_data)
-
     if not current_data:
         current_data = []
 
     if not summary:
         return current_data
 
-    new_row = dict((k, v) for k, v in zip(summary['x_map'], summary['x']))
-    new_row['fun'] = summary['fun']
+    row = {}
+    row['filename'] = filename.removesuffix('.csv')
+    row['Ah'] = 'TODO'  # TODO
+    
+    for name, x, std in zip(summary['x_map'], summary['x'], summary['x_std']):
+        row[name] = x 
+        row[name + '_std'] = 'nan' if std is None else std
+    
+    row['fun'] = summary['fun']
+    row['success'] = str(summary['success'])
+    row['message'] = summary['message']
 
-    new_row['filename'] = filename.removesuffix('.csv')
 
-    current_data.append(new_row)
+    current_data.append(row)
 
     return current_data
 

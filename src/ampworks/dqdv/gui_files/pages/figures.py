@@ -77,7 +77,7 @@ figure.add_trace(go.Scatter(
     x=[], y=[], mode='markers',
     name='Data', legendgroup='data',
     marker=dict(
-        size=7,
+        size=8,
         symbol='circle',
         color='#c5c5c5',
     )),
@@ -87,7 +87,7 @@ figure.add_trace(go.Scatter(
     x=[], y=[], mode='markers',
     name='Data', legendgroup='data', showlegend=False,
     marker=dict(
-        size=7,
+        size=8,
         symbol='circle',
         color='#c5c5c5',
     )),
@@ -97,7 +97,7 @@ figure.add_trace(go.Scatter(
     x=[], y=[], mode='markers',
     name='Data', legendgroup='data', showlegend=False,
     marker=dict(
-        size=10,
+        size=8,
         symbol='circle',
         color='#c5c5c5',
     )),
@@ -155,21 +155,21 @@ figure.add_trace(go.Scatter(
 
 # annotations
 figure.add_annotation(
-    text="MAP=nan%",
+    text="MAPE=nan%",
     x=0.5, y=0.95,
     xref="x domain", yref="y domain",
     showarrow=False,
     row=1, col=1,
 )
 figure.add_annotation(
-    text="MAP=nan%",
+    text="MAPE=nan%",
     x=0.9, y=0.9,
     xref="x domain", yref="y domain",
     showarrow=False,
     row=1, col=2,
 )
 figure.add_annotation(
-    text="MAP=nan%",
+    text="MAPE=nan%",
     x=0.9, y=0.9,
     xref="x domain", yref="y domain",
     showarrow=False,
