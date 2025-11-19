@@ -88,7 +88,7 @@ class RichTable:
     def __repr__(self) -> str:
         """Return the string representation of the underlying DataFrame."""
         return repr(self._df)
-    
+
     @classmethod
     def _validate_columns(cls, df: DataFrame) -> None:
         """
@@ -127,7 +127,7 @@ class RichTable:
         """
         from pandas import read_csv
         df = read_csv(path)
-        
+
         try:
             return cls(df)
         except TypeError:

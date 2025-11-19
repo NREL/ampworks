@@ -5,7 +5,6 @@ import dash
 import numpy as np
 import pandas as pd
 import ampworks as amp
-import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 from dash import dcc, html, Output, Input, State
@@ -632,7 +631,7 @@ def toggle_theme_switch(switch_on, flags):
     prevent_initial_call=True,
 )
 def update_cell_styles(mk, ms, clr, flags):
-    
+
     for i in range(0, 3):
         figure.data[i].marker.symbol = mk
         figure.data[i].marker.size = 6 + 2*(int(ms) - 1)

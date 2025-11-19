@@ -7,7 +7,7 @@ parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more.
 These routines provide key properties for life and physics-based models (e.g.,
 SPM and P2D). Graphical user interfaces (GUIs) are available for some of the
 analyses. See a list of the GUI-based applications by running ``ampworks -h``
-in your terminal after installation. 
+in your terminal after installation.
 
 Note: ``ampworks`` is in early development. The API may change as it matures.
 

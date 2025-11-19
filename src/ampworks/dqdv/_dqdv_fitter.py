@@ -26,16 +26,16 @@ class DqdvFitter:
     ) -> None:
         """
         Wrapper for dQdV fitting.
-        
+
         Fits electrode stoichiometries to replicate the voltage response of a
         full cell. Fitting relies on low-rate half-cell and full-cell charge
         and/or discharge curves to approximate open-circuit potentials.
-        
+
         Internally, data is automatically used to generate smooth splines for
         the fitting routines. However, pre-processing to reduce noise in the
         measurements is recommended to avoid instabilities in the fits and
         derivative calculations.
-        
+
         Note that reported stoichiometries x0/x1 are in reference to relative
         states of charge. Furthermore, the values differ in meaning between the
         negative and positive electrodes. xp0 and xp1 refer to the relative
@@ -176,7 +176,7 @@ class DqdvFitter:
                              f" can only be 'all' or a subset of {options}.")
 
         self._cost_terms = value
-        
+
     def _check_dataframe(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """
         Verify that input dataframes have 'Ah' and 'Volts' columns.
@@ -200,11 +200,11 @@ class DqdvFitter:
             The 'df' input must be type pd.DataFrame.
         ValueError
             'df' is missing columns, required={'Ah', 'Volts'}.
-            
+
         """
-        
+
         self._initialized[which] = False
-        
+
         required = {'soc', 'voltage'}
         if df is None:
             pass
@@ -212,9 +212,9 @@ class DqdvFitter:
             raise TypeError(f"'{which}' must be type pd.DataFrame.")
         elif not required.issubset(df.columns):
             raise ValueError(f"'{which}' is missing columns, {required=}.")
-        
+
         return df
-        
+
     def _build_splines(self, df: pd.DataFrame, which: str) -> Callable:
         """
         Generate OCV interpolation functions.
@@ -320,7 +320,7 @@ class DqdvFitter:
             'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
-            
+
         Notes
         -----
         Due to the internally storage of the half-cell data and splines, the
@@ -337,7 +337,7 @@ class DqdvFitter:
         electrode potentials by passing the appropriate sections of the fitted
         x0/x1 values. For example, use ``get_ocv(fit_result.x[0:2])`` for the
         negative electrode and ``get_ocv(fit_result[2:4])`` for the positive
-        electrode. 
+        electrode.
 
         """
 
@@ -374,7 +374,7 @@ class DqdvFitter:
             'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
-            
+
         Notes
         -----
         The individual electrode datasets and splines are internally stored in
@@ -416,7 +416,7 @@ class DqdvFitter:
             'which' must be in ['neg', 'pos', 'cell'].
         RuntimeError
             If the requested spline has not yet been constructed.
-            
+
         Notes
         -----
         The individual electrode datasets and splines are internally stored in
@@ -476,11 +476,11 @@ class DqdvFitter:
         volt_data = self._volt_data
         dqdv_data = self._dqdv_data
         dvdq_data = self._dvdq_data
-        
+
         volt_err = np.mean(np.abs((volt_fit - volt_data) / volt_data))
         dqdv_err = np.mean(np.abs((dqdv_fit - dqdv_data) / dqdv_data))
         dvdq_err = np.mean(np.abs((dvdq_fit - dvdq_data) / dvdq_data))
-        
+
         # attempt at using relative MSE, non-trivial to figure out scaling...
         # volt_scale = np.maximum(volt_data, volt_data.mean())
         # dqdv_scale = np.maximum(dqdv_data, dqdv_data.mean())
@@ -489,7 +489,7 @@ class DqdvFitter:
         # volt_err = np.mean(((volt_fit - volt_data) / volt_scale)**2)
         # dqdv_err = np.mean(((dqdv_fit - dqdv_data) / dqdv_scale)**2)
         # dvdq_err = np.mean(((dvdq_fit - dvdq_data) / dvdq_scale)**2)
-        
+
         errs = RichResult(
             soc=self._soc,
             volt_err=volt_err*100.,
@@ -611,7 +611,7 @@ class DqdvFitter:
         than a statistical interpretation. This is because all fitting routines
         use a mean absolute percent error (MAPE) function, but the uncertainty
         approximation needs a sum of squared residuals error function.
-        
+
         Since two different error functions are used between the fit and the
         uncertainty estimates, they are not directly linked. However, using the
         combination of these two functions has empirically provided consistent
@@ -619,7 +619,7 @@ class DqdvFitter:
         sets. We highlight the details of the methods here and leave it to the
         user to interpret and decide whether or not to belience and/or use the
         uncertainty estimates.
-        
+
         .. _std-notes:
             https://kitchingroup.cheme.cmu.edu/pycse/book/
             12-nonlinear-regression-2.html
@@ -688,10 +688,10 @@ class DqdvFitter:
         warnings.filterwarnings('default')
 
         # Use Hessian to approximate variance. Requires SSR error function.
-        # An added diagonal scaling stabalizes inversion (avoids non-singular).
-        
+        # An added diagonal scaling stabilizes inversion (avoids non-singular).
+
         def ssr(x: npt.ArrayLike) -> float:  # sum of squared residuals
-            
+
             errs = self.err_terms(x)
 
             volt_err = np.sum((errs['volt_fit'] - errs['volt_data'])**2)

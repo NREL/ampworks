@@ -81,15 +81,14 @@ def log_new_row(_, current_data, summary, filename):
     row = {}
     row['filename'] = filename.removesuffix('.csv')
     row['Ah'] = 'TODO'  # TODO
-    
+
     for name, x, std in zip(summary['x_map'], summary['x'], summary['x_std']):
-        row[name] = x 
+        row[name] = x
         row[name + '_std'] = 'nan' if std is None else std
-    
+
     row['fun'] = summary['fun']
     row['success'] = str(summary['success'])
     row['message'] = summary['message']
-
 
     current_data.append(row)
 

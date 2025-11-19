@@ -50,7 +50,7 @@ class DqdvFitTable(RichTable):
             Any extra, non-required columns to add to the table. Pass the column
             names and their row values to ``append`` when writing each row. Use
             to track equivalent full cycles or other metrics with each fit.
-        
+
         Raises
         ------
         TypeError
@@ -60,7 +60,7 @@ class DqdvFitTable(RichTable):
 
         if extra_cols is None:
             extra_cols = []
-            
+
         if not isinstance(extra_cols, list):
             raise TypeError("'extra_cols' must be type list[str].")
 
@@ -69,7 +69,7 @@ class DqdvFitTable(RichTable):
         df = pd.DataFrame(data)
 
         super().__init__(df)
-        
+
     def append(self, fit_result: DqdvFitResult, **extra_cols) -> None:
         """
         Append a new row to the table.

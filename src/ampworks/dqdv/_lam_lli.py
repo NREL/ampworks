@@ -53,15 +53,15 @@ def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
 
     Returns
     -------
-    aging_result : AgingResult
+    deg_table : DegModeTable
         Electrode capacities (Q) and loss of active material (LAM) for the
         negative (n) and positive (p) electrodes, and loss of lithium inventory
         (LLI). Capacities are in Ah. All other outputs are unitless.
-        
+
     See Also
     --------
     ~ampworks.dqdv.DqdvFitter : Access to fitting routines.
-        
+
     References
     ----------
     .. [1] A. Weng, J. B. Siegel, and A. Stefanopoulou, "Differential voltage
@@ -99,7 +99,7 @@ def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
     LLI = 1. - inv / inv[0]
 
     inv_std = np.sqrt(
-          ((Qn + xn0*dQn)*xn0_std)**2           # contribution from xn0
+        ((Qn + xn0*dQn)*xn0_std)**2           # contribution from xn0
         + ((xn0*dQn)*xn1_std)**2                # contribution from xn1
         + ((-Qp + (1. - xp0)*dQp)*xp0_std)**2   # contribution from xp0
         + (((1. - xp0)*dQp)*xn1_std)**2         # contribution from xp1
@@ -136,14 +136,14 @@ def plot_lam_lli(deg_table: DegModeTable, fit_table: DqdvFitTable,
     std : bool, optional
         If True (default), includes estimated error bands for +/- one standard
         deviation. NaN values will result in missing bands at those points.
-        
+
     See Also
     --------
     ~ampworks.dqdv.DqdvFitter : Access to the fitting routines.
     ~ampworks.dqdv.DqdvFitTable : Required container to store multiple fits.
     ~ampworks.dqdv.DegModeTable : Table of calculated degradation modes.
     ~ampworks.dqdv.calc_lam_lli : Calculate degradation modes before plottting.
-        
+
     """
     from ampworks.utils import _ExitHandler
     from ampworks.plotutils import format_ticks

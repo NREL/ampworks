@@ -102,16 +102,16 @@ def standardize_headers(data: pd.DataFrame) -> Dataset:
             h2 = strip_chars(h1)
             if h2 not in HEADER_ALIASES[std_header]:
                 continue
-            
+
             df[std_header] = data[h1]
-            
+
             # Standardize units
             if std_header in UNIT_FACTORS.keys():
                 for units, factor in UNIT_FACTORS[std_header].items():
                     if any(u in h2 for u in units):
                         df[std_header] = df[std_header].astype(float)*factor
                         break
-                      
+
     # Create 'State' data if not present
     if ('State' not in df.columns) and ('Amps' in df.columns):
         df['Amps'] = df['Amps'].astype(float)
@@ -145,7 +145,7 @@ def standardize_headers(data: pd.DataFrame) -> Dataset:
     # Final data typing, unit normalization, and checks for missing headers
     missing = []
     for std_header in HEADER_ALIASES.keys():
-        
+
         # Convert types
         if std_header in df.columns:
             if std_header in ['DateTime', 'State']:
@@ -158,7 +158,7 @@ def standardize_headers(data: pd.DataFrame) -> Dataset:
                 df[std_header] = df[std_header].astype(float)
         else:
             missing.append(std_header)
-            
+
     if missing:
         warn(f"No valid headers found for std_header={missing}.")
 
@@ -167,7 +167,7 @@ def standardize_headers(data: pd.DataFrame) -> Dataset:
 
 def read_table(filepath: PathLike) -> Dataset:
     """Read tab-delimited file."""
-    
+
     from ampworks import Dataset
 
     with open(filepath, encoding='utf-8') as datafile:
@@ -177,7 +177,7 @@ def read_table(filepath: PathLike) -> Dataset:
             if header_matches(line.rstrip('\n').split('\t'), REQUIRED_HEADERS):
                 skiprows, found_header = idx, True
                 break
-        
+
         if found_header:
             df = pd.read_csv(filepath, sep='\t', skiprows=skiprows,
                              encoding_errors='ignore')
@@ -191,19 +191,19 @@ def read_table(filepath: PathLike) -> Dataset:
 def read_excel(filepath: PathLike, sheet_name: str | int | list = 'first',
                stack_sheets: bool = False) -> Dataset:
     """Read excel file."""
-    
+
     from ampworks import Dataset
 
     workbook = pd.ExcelFile(filepath)
     all_sheets = workbook.sheet_names
     num_sheets = len(all_sheets)
-    
+
     # Warn if any sheet conflicts with 'first' or 'all'
     if sheet_name == 'first' and 'first' in all_sheets:
         warn()
     elif sheet_name == 'all' and 'all' in all_sheets:
         warn()
-        
+
     # Set which sheets to iterate through
     if sheet_name in ['first', 'all']:
         iter_sheets = all_sheets
@@ -211,12 +211,12 @@ def read_excel(filepath: PathLike, sheet_name: str | int | list = 'first',
         iter_sheets = [sheet_name]
     else:
         iter_sheets = sheet_name
-        
+
     # Raise errors if invalid indices/names
     indices = [v for v in iter_sheets if isinstance(v, int)]
     strings = [v for v in iter_sheets if isinstance(v, str)]
     others = [v for v in iter_sheets if not isinstance(v, (int, str))]
-    
+
     bad_ind = [i for i in indices if not -num_sheets <= i < num_sheets]
     bad_str = [s for s in strings if s not in all_sheets]
     if bad_ind:
@@ -225,7 +225,7 @@ def read_excel(filepath: PathLike, sheet_name: str | int | list = 'first',
         raise ValueError(f"Invalid worksheet names {bad_str}")
     if others:
         raise TypeError("'sheet_name' must only contain str and/or int types")
-        
+
     # Iterate through select sheets
     failed = []
     datasets = {}
@@ -246,7 +246,7 @@ def read_excel(filepath: PathLike, sheet_name: str | int | list = 'first',
                 break
         else:
             failed.append(sheet)
-            
+
     # Prepare outputs
     if sheet_name != 'first' and failed:
         warn(f"Could not find valid headers in requested sheets: {failed}")
@@ -254,23 +254,23 @@ def read_excel(filepath: PathLike, sheet_name: str | int | list = 'first',
     if not datasets:
         warn(f"No valid headers found in requested sheets of {filepath}")
         return Dataset()
-    
+
     if stack_sheets:
         stack = pd.concat([ds for ds in datasets.values()], ignore_index=True)
         return Dataset(stack)
-    
+
     if len(datasets) == 1:
         (single,) = datasets.values()
-        return single 
-    
+        return single
+
     return datasets
 
 
 def read_csv(filepath: PathLike) -> Dataset:
     """Read csv file."""
-    
+
     from ampworks import Dataset
-    
+
     with open(filepath, encoding='utf-8') as datafile:
 
         skiprows, found_header = 0, False
@@ -278,7 +278,7 @@ def read_csv(filepath: PathLike) -> Dataset:
             if header_matches(line.rstrip('\n').split(','), REQUIRED_HEADERS):
                 skiprows, found_header = idx, True
                 break
-            
+
         if found_header:
             df = pd.read_csv(filepath, sep=',', skiprows=skiprows,
                              encoding_errors='ignore')
