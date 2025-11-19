@@ -6,7 +6,7 @@ from ampworks.utils import RichTable, RichResult
 
 
 class DqdvFitResult(RichResult):
-    """dQdV fit result."""
+    """Container for a single dQdV fit."""
 
     def __init__(self, **kwargs) -> None:
         """
@@ -31,7 +31,7 @@ class DqdvFitResult(RichResult):
 
 
 class DqdvFitTable(RichTable):
-    """dQdV fits table."""
+    """Container for many dQdV fits."""
 
     _required_cols = [
         'Ah', 'xn0', 'xn0_std', 'xn1', 'xn1_std', 'xp0', 'xp0_std',
@@ -51,10 +51,18 @@ class DqdvFitTable(RichTable):
             names and their row values to ``append`` when writing each row. Use
             to track equivalent full cycles or other metrics with each fit.
 
+        Raises
+        ------
+        TypeError
+            'extra_cols' must be type list[str].
+
         """
 
         if extra_cols is None:
             extra_cols = []
+
+        if not isinstance(extra_cols, list):
+            raise TypeError("'extra_cols' must be type list[str].")
 
         data = {col: [] for col in self._required_cols + extra_cols}
 
@@ -62,14 +70,14 @@ class DqdvFitTable(RichTable):
 
         super().__init__(df)
 
-    def append(self, summary: DqdvFitResult, **extra_cols) -> None:
+    def append(self, fit_result: DqdvFitResult, **extra_cols) -> None:
         """
         Append a new row to the table.
 
         Parameters
         ----------
-        summary : DqdvFitResult
-            A summary of the fit results.
+        fit_result : DqdvFitResult
+            A result from the ``DqdvFitter's`` grid search or constrained fit.
         extra_cols : dict, optional
             Any extra column names/values to include in the row.
 
@@ -81,20 +89,20 @@ class DqdvFitTable(RichTable):
 
         """
         row = {
-            'Ah': summary.Ah,
-            'fun': summary.fun,
-            'success': summary.success,
-            'message': summary.message,
+            'Ah': fit_result.Ah,
+            'fun': fit_result.fun,
+            'success': fit_result.success,
+            'message': fit_result.message,
         }
 
         # fill from x_map
-        for idx, name in enumerate(summary.x_map):
-            row[name] = summary.x[idx]
-            row[name + '_std'] = summary.x_std[idx]
+        for idx, name in enumerate(fit_result.x_map):
+            row[name] = fit_result.x[idx]
+            row[name + '_std'] = fit_result.x_std[idx]
 
         # add in any extra columns
         for k in extra_cols.keys():
-            if k not in self._df.columns:
+            if k not in self.df.columns:
                 raise ValueError(
                     f"Column '{k}' does not exist in 'DqdvFitResult'. Extra"
                     " columns must be defined during initialization."
@@ -103,7 +111,7 @@ class DqdvFitTable(RichTable):
             row[k] = extra_cols[k]
 
         # append the new row
-        self._df.loc[len(self._df)] = row
+        self.df.loc[len(self.df)] = row
 
 
 class DegModeTable(RichTable):

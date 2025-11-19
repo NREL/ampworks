@@ -32,11 +32,7 @@ def run_gui(jupyter_mode: str = 'external', jupyter_height: int = 650) -> None:
         How to display the GUI in jupyter notebooks. Run in a new browser tab
         with 'external' (default), or in the notebook with 'inline'.
     jupyter_height : int, optional
-        Application height (px) when displayed using 'inline'. Defaults to 650.
-
-    Returns
-    -------
-    None.
+        Height (in px) when displayed using 'inline'. Defaults to 650.
 
     Warnings
     --------

@@ -75,10 +75,6 @@ class ProgressBar(tqdm):
         progress : float
             Progress fraction in [0, 1].
 
-        Returns
-        -------
-        None.
-
         """
         self._iter += 1
         self.n = progress
@@ -134,10 +130,6 @@ class ProgressBar(tqdm):
         """
         Resets the iteration count to zero for repeated use. Only works for
         manual mode. For iterables you will need to create a new instance.
-
-        Returns
-        -------
-        None.
 
         """
         self._iter = 0

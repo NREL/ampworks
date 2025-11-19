@@ -21,10 +21,6 @@ def minor_ticks(ax: Axes, xdiv: int = None, ydiv: int = None) -> None:
     ydiv : int, optional
         Divisions between y major ticks. Defaults to None (auto locate).
 
-    Returns
-    -------
-    None.
-
     Notes
     -----
     This function ignores axes with logarithmic scaling.
@@ -51,17 +47,13 @@ def tick_direction(ax: Axes, xdir: str = 'in', ydir: str = 'in',
     ax : Axes
         An axis instance from a matplotlib figure.
     xdir : {'in', 'out', 'inout'}, optional
-        Places the x ticks inside the Axes, outside, or both. By default 'in'.
+        Places x ticks inward, outward, or both. By default 'in'.
     ydir : {'in', 'out', 'inout'}, optional
-        Places the y ticks inside the Axes, outside, or both. By default 'in'.
+        Places y ticks inward, outward, or both. By default 'in'.
     top : bool, optional
         Mirror the x ticks along the top of Axis, by default True.
     right : bool, optional
         Mirror the y ticks along the top of Axis, by default True.
-
-    Returns
-    -------
-    None.
 
     """
 
@@ -91,17 +83,13 @@ def format_ticks(
     ydiv : int, optional
         Divisions between y major ticks. Defaults to None (auto locate).
     xdir : {'in', 'out', 'inout'}, optional
-        Places the x ticks inside the Axes, outside, or both. By default 'in'.
+        Places x ticks inward, outward, or both. By default 'in'.
     ydir : {'in', 'out', 'inout'}, optional
-        Places the y ticks inside the Axes, outside, or both. By default 'in'.
+        Places y ticks inward, outward, or both. By default 'in'.
     top : bool, optional
         Mirror the x ticks along the top of Axis, by default True.
     right : bool, optional
         Mirror the y ticks along the top of Axis, by default True.
-
-    Returns
-    -------
-    None.
 
     """
 
