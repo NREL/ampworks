@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- Add `hppc` subpackage to extract impedance from HPPC protocols ([#12](https://github.com/NREL/ampworks/pull/12))
 - Update dQdV GUI figure to gridspec with electrode voltages ([#10](https://github.com/NREL/ampworks/pull/10))
 - New `RichTable` container with column validation ([#9](https://github.com/NREL/ampworks/pull/9))
 - Include standard deviations in dQdV fits ([#8](https://github.com/NREL/ampworks/pull/8))
