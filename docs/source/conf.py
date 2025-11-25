@@ -145,6 +145,7 @@ dataset_keep = [
     'from_csv',
     'from_excel',
     'from_table',
+    'zero_below',
     'interactive_xy_plot',
 ]
 
