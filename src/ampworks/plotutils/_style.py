@@ -29,7 +29,8 @@ PLOTLY_TEMPLATE = go.layout.Template(
             bordercolor='rgba(0,0,0,0)',
             entrywidth=0.125, entrywidthmode='fraction',
             xanchor='center', x=0.5, yanchor='top', y=1.15,
-        )
+        ),
+        margin=dict(l=80, r=80, t=60, b=80),
     )
 )
 

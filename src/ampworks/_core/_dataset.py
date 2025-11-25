@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
+
+if TYPE_CHECKING:  # pragma: no cover
+    import numpy.typing as npt
 
 
 class Dataset(pd.DataFrame):
@@ -71,11 +76,16 @@ class Dataset(pd.DataFrame):
         else:
             return df
 
-    def interactive_xy_plot(self, x: str, y: str, tips: list[str],
-                            save: str = None) -> None:
+    def interactive_xy_plot(
+        self, x: str, y: str, tips: list[str] | None = None,
+        figsize: npt.ArrayLike | None = (800, 450), save: str = None,
+    ) -> None:
 
-        from ampworks import _in_notebook
-        from ampworks.plotutils._style import PLOTLY_CONFIG, PLOTLY_TEMPLATE
+        from ampworks.plotutils._style import PLOTLY_TEMPLATE
+        from ampworks.plotutils._render import _render_plotly
+
+        if tips is None:
+            tips = []
 
         fig = px.line(
             self, x=x, y=y, markers=True,
@@ -83,17 +93,35 @@ class Dataset(pd.DataFrame):
         )
 
         fig.update_layout(template=PLOTLY_TEMPLATE)
+        _render_plotly(fig=fig, figsize=figsize, save=save)
 
-        in_nb = _in_notebook()
-        auto_open = True if not in_nb else False
+    def zero_below(self, column: str, threshold: float,
+                   inplace: bool = False) -> Dataset:
+        """
+        Set values in 'column' below 'threshold' to zero.
 
-        if save or not in_nb:
+        Parameters
+        ----------
+        column : str
+            Column name to apply thresholding.
+        threshold : float
+            Values with absolute value below this threshold are set to zero.
+        inplace : bool, optional
+            If True, modify the Dataset in place. Otherwise, return a new
+            Dataset. Default is False.
 
-            path = save if save is not None else 'plot.html'
-            if not path.endswith('.html'):
-                path += '.html'
+        Returns
+        -------
+        data : Dataset
+            The modified Dataset if 'inplace' is False.
 
-            fig.write_html(path, auto_open=auto_open, config=PLOTLY_CONFIG)
+        """
 
-        if in_nb:
-            fig.show(config=PLOTLY_CONFIG)
+        df = self.copy()
+        mask = df[column].abs() < abs(threshold)
+        df.loc[mask, column] = 0.0
+
+        if inplace:
+            self.__init__(df)
+        else:
+            return df

@@ -12,11 +12,14 @@ A brief description of each dataset is given below:
 2. ``gitt_discharge`` - example GITT data (using discharge/rest sequences)
 3. ``ici_charge`` - example ICI data (using charge/rest sequences)
 4. ``ici_discharge`` - example ICI data (using discharge/rest sequences)
+5. ``hppc_discharge`` - example HPPC data (using discharge sequences)
 
 """
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+from warnings import catch_warnings, filterwarnings
 
 import os
 import shutil
@@ -105,7 +108,9 @@ def load_datasets(*names: str) -> Dataset:
         if name not in available:
             raise ValueError(f"{name} is not an available dataset.")
 
-        data = read_csv(resources.joinpath(name))
+        with catch_warnings():
+            filterwarnings('ignore', message='.*No valid headers.*')
+            data = read_csv(resources.joinpath(name))
 
         datasets.append(data)
 

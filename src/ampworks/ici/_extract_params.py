@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -40,7 +41,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     ----------
     data : Dataset
         The sliced ICI data to process. Must have, at a minimum, columns for
-        {'Seconds', 'Amps', 'Volts'}. See notes for more information.
+        ``{'Seconds', 'Amps', 'Volts'}``. See notes for more information.
     radius : float
         The representative particle radius of your active material (in meters).
         It's common to use D50 / 2, i.e., the median radius of a distribution.
@@ -73,9 +74,9 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Notes
     -----
     Rests within the dataset are expected to have a current exactly equal to
-    zero. You can use ``data.loc[data['Amps'].abs() <= tol, 'Amps'] = 0`` if
-    you need to manually zero out currents below some tolerance. This must be
-    done prior to passing in the dataset to this function.
+    zero. You can use ``data.zero_below('Amps', threshold)`` to manually zero
+    out currents below some tolerance, if needed. This should be done prior to
+    passing in the dataset to this function.
 
     This algorithm expects charge/discharge currents to be positive/negative,
     respectfully. If your sign convention is the opposite, the mapping to 'SOC'

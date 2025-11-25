@@ -39,6 +39,7 @@ __all__ = [
     'ici',
     'gitt',
     'dqdv',
+    'hppc',
     'utils',
     'datasets',
     'mathutils',
@@ -47,9 +48,9 @@ __all__ = [
     '_in_notebook',
 ]
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ampworks import (
-        ici, gitt, dqdv, utils, datasets, mathutils, plotutils,
+        ici, gitt, dqdv, hppc, utils, datasets, mathutils, plotutils,
     )
 
 
@@ -58,6 +59,7 @@ _lazy_modules = {
     'ici': 'ampworks.ici',
     'gitt': 'ampworks.gitt',
     'dqdv': 'ampworks.dqdv',
+    'hppc': 'ampworks.hppc',
     'utils': 'ampworks.utils',
     'datasets': 'ampworks.datasets',
     'mathutils': 'ampworks.mathutils',
