@@ -18,6 +18,7 @@
 - Added tests for `ici.extract_params` ([#5](https://github.com/NREL/ampworks/pull/5))
 
 ### Bug Fixes
+- Update patching policy for releases, use `spellcheck` in nox pre-commit ([#13](https://github.com/NREL/ampworks/pull/13))
 - Readers missing name-only columns, e.g., `testtime` ([#8](https://github.com/NREL/ampworks/pull/8))
 
 ### Breaking Changes
