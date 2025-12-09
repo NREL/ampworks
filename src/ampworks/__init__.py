@@ -36,6 +36,7 @@ __all__ = [
     'read_csv',
     'read_excel',
     'read_table',
+    'ocv',
     'ici',
     'gitt',
     'dqdv',
@@ -50,12 +51,13 @@ __all__ = [
 
 if TYPE_CHECKING:  # pragma: no cover
     from ampworks import (
-        ici, gitt, dqdv, hppc, utils, datasets, mathutils, plotutils,
+        ocv, ici, gitt, dqdv, hppc, utils, datasets, mathutils, plotutils,
     )
 
 
 # Lazily load submodules/subpackages
 _lazy_modules = {
+    'ocv': 'ampworks.ocv',
     'ici': 'ampworks.ici',
     'gitt': 'ampworks.gitt',
     'dqdv': 'ampworks.dqdv',

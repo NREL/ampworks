@@ -8,11 +8,13 @@ modes from fitted stoichiometries.
 import warnings
 
 from ._dqdv_fitter import DqdvFitter
+from ._dqdv_spline import DqdvSpline
 from ._tables import DqdvFitResult, DqdvFitTable, DegModeTable
 from ._lam_lli import calc_lam_lli, plot_lam_lli
 
 __all__ = [
     'DqdvFitter',
+    'DqdvSpline',
     'DqdvFitResult',
     'DqdvFitTable',
     'DegModeTable',
