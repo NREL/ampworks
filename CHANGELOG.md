@@ -25,6 +25,9 @@
 ### Breaking Changes
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))
 
+### Chores
+None.
+
 ## [v0.0.1](https://github.com/NREL/ampworks/tree/v0.0.1)
 This is the first release of `ampworks`. Main features/capabilities are listed below.
 

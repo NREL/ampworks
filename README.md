@@ -39,7 +39,7 @@ The best way to get started is by exploring the `examples` folder, which include
 * Python, Spyder, and Jupyter Notebooks can be setup using [Anaconda](https://www.anaconda.com/download/success). Anaconda provides a convenient way for new users to get started with Python due to its friendly graphical installer and environment manager.
 
 ## Citing this Work
-This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
+This work was authored by researchers at the National Laboratory of the Rockies (NLR). If you use use this package in your work, please include the following citation:
 
 > Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software, Mar. 2025. url: [github.com/NREL/ampworks](https://github.com/NREL/ampworks). doi: [10.11578/dc.20250313.2](https://doi.org/10.11578/dc.20250313.2).
 
@@ -60,4 +60,4 @@ For convenience, we also provide the following for your BibTex:
 If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/ampworks/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines](https://ampworks.readthedocs.io/en/latest/development).
 
 ## Disclaimer
-This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.
+This work was authored by the National Laboratory of the Rockies (NLR), operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

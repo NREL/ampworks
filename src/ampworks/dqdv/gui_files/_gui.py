@@ -51,7 +51,7 @@ dash_link = html.A(
 
 footer = html.Div(
     [
-        html.Div('© Alliance for Sustainable Energy, LLC'),
+        html.Div('© Alliance for Energy Innovation, LLC'),
         html.Div(['Created using ', dash_link], className='text-end'),
     ],
     id='footer',
