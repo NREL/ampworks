@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NREL/ampworks)
 
 ### New Features
+- New `ocv` module with `match_peaks` function and supporting `DqdvSpline` ([#14](https://github.com/NREL/ampworks/pull/14))
 - Add `hppc` subpackage to extract impedance from HPPC protocols ([#12](https://github.com/NREL/ampworks/pull/12))
 - Update dQdV GUI figure to gridspec with electrode voltages ([#10](https://github.com/NREL/ampworks/pull/10))
 - New `RichTable` container with column validation ([#9](https://github.com/NREL/ampworks/pull/9))

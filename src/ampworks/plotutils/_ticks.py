@@ -71,7 +71,7 @@ def format_ticks(
     """
     Formats axis ticks.
 
-    Specifically, both applies ``minor_ticks()`` and ``tick_directions()`` from
+    Specifically, both applies `minor_ticks()` and `tick_directions()` from
     one convenient function, instead of calling them separately.
 
     Parameters

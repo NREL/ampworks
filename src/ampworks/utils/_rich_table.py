@@ -14,31 +14,31 @@ class RichTable:
 
     def __init__(self, df: DataFrame) -> None:
         """
-        Provides a structured way to store data using a ``pd.DataFrame`` with
+        Provides a structured way to store data using a `pd.DataFrame` with
         additional validation and formatting features. Use this class directly
-        by passing in a ``pd.DataFrame``, or subclass it to define custom
+        by passing in a `pd.DataFrame`, or subclass it to define custom
         containers with required columns.
 
-        Inheriting classes should define the class attribute ``_required_cols``
+        Inheriting classes should define the class attribute `_required_cols`
         which is a list of column names that must be present in the input. If
-        any are missing, initialization will raise a ``ValueError``.
+        any are missing, initialization will raise a `ValueError`.
 
         Parameters
         ----------
         df : pd.DataFrame
             The input dataframe to store. Columns are validated against the
-            ``_required_cols`` attribute and then stored.
+            `_required_cols` attribute and then stored.
 
         Notes
         -----
         While this container is meant to act as a simplified dataframe, access
-        to the full ``pd.DataFrame`` is provided via the ``df`` property. While
+        to the full `pd.DataFrame` is provided via the `df` property. While
         the entire dataframe cannot be replaced, it can be manipulated in place
         through this property.
 
         Examples
         --------
-        A minimal example using ``RichTable`` directly:
+        A minimal example using `RichTable` directly:
 
         .. code-block:: python
 
@@ -102,7 +102,7 @@ class RichTable:
         Raises
         ------
         ValueError
-            If any columns listed in ``_required_cols`` are missing.
+            If any columns listed in `_required_cols` are missing.
 
         """
         required = set(cls._required_cols)

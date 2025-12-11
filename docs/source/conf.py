@@ -22,9 +22,9 @@ json_url = 'https://ampworks.readthedocs.io/en/latest/_static/switcher.json'
 
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
     'myst_nb',
     'sphinx_design',
     'sphinx_copybutton',
@@ -47,6 +47,7 @@ source_suffix = {
     '.rst': 'restructuredtext',
 }
 
+default_role = 'literal'  # allow single backticks for inline code refs
 highlight_language = 'console'
 
 
@@ -100,7 +101,9 @@ html_theme_options = {
 # -- Options for napoleon ----------------------------------------------------
 # https://sphinx-doc.org/en/master/usage/extensions/napoleon.html
 
+napoleon_use_ivar = True
 napoleon_use_rtype = False
+napoleon_numpy_docstring = True
 napoleon_custom_sections = [
     'TODO',
     'Summary',
@@ -111,14 +114,14 @@ napoleon_custom_sections = [
 # -- Options for autoapi -----------------------------------------------------
 # https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 
+autoapi_root = 'api'
 autoapi_type = 'python'
+autoapi_keep_files = True
+autodoc_typehints = 'none'
+autoapi_member_order = 'groupwise'
+autoapi_python_class_content = 'both'
 autoapi_ignore = ['*/__pycache__/*']
 autoapi_dirs = ['../../src/ampworks']
-autoapi_keep_files = True
-autoapi_root = 'api'
-autoapi_member_order = 'groupwise'
-autodoc_typehints = 'none'
-autoapi_python_class_content = 'both'
 autoapi_options = [
     'members',
     'imported-members',

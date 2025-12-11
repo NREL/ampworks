@@ -8,11 +8,13 @@ modes from fitted stoichiometries.
 import warnings
 
 from ._dqdv_fitter import DqdvFitter
+from ._dqdv_spline import DqdvSpline
 from ._tables import DqdvFitResult, DqdvFitTable, DegModeTable
 from ._lam_lli import calc_lam_lli, plot_lam_lli
 
 __all__ = [
     'DqdvFitter',
+    'DqdvSpline',
     'DqdvFitResult',
     'DqdvFitTable',
     'DegModeTable',
@@ -40,7 +42,7 @@ def run_gui(jupyter_mode: str = 'external', jupyter_height: int = 650) -> None:
     experience issues if you call it from a normal script, or in an interactive
     session within some IDEs (e.g., Spyder, PyCharm, IPython, etc.). if you're
     looking for another way to access the GUI without needing to open Jupyter
-    Notebooks, you can use the ``ampworks --app`` command from your terminal.
+    Notebooks, you can use the `ampworks --app` command from your terminal.
 
     """
 

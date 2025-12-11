@@ -25,7 +25,7 @@ def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
         Q_{ed} = \frac{\rm capacity}{x_{1,ed} - x_{0,ed}}, \quad \quad
         {\rm LAM}_{ed} = 1 - \frac{Q_{ed}}{Q_{ed}[0]},
 
-    where :math:`ed` is generic for 'electrode'. Output uses 'n' and 'p' to
+    where :math:`ed` is generic for 'electrode'. Outputs use 'n' and 'p' to
     differentiate between negative and positive electrodes, respectively. Loss
     of lithium inventory (LLI) is
 
@@ -36,13 +36,13 @@ def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
 
     where :math:`{\rm Inv}` is the total lithium inventories using capacities
     :math:`Q` from above. If standard deviations of the x0/x1 stoichiometries
-    are available in ``results`` (and are not NaN), then they are propagated
+    are available in `results` (and are not NaN), then they are propagated
     to give uncertainty estimates for the LAM/LLI values. Reported uncertainties
     come from first-order Taylor series assumptions. If you trust your x0/x1
     fits but see large or inconsistent uncertainties then it is also safe to
     trust the LAM/LLI values, but you may want to neglect LAM/LLI uncertainties.
-    Note that ``(1 - xp0)`` is used instead of just ``xp0`` because x0 refers
-    to the delithiated state of the positive electrode whereas ``xn0`` refers
+    Note that `(1 - xp0)` is used instead of just `xp0` because x0 refers
+    to the delithiated state of the positive electrode whereas `xn0` refers
     to the lithiated state of the negative electrode, and does not require the
     same inversion.
 
@@ -61,6 +61,7 @@ def calc_lam_lli(fit_table: DqdvFitTable) -> pd.DataFrame:
     See Also
     --------
     ~ampworks.dqdv.DqdvFitter : Access to fitting routines.
+    ~ampworks.dqdv.DegModeTable : Table of calculated degradation modes.
 
     References
     ----------
@@ -129,7 +130,7 @@ def plot_lam_lli(deg_table: DegModeTable, fit_table: DqdvFitTable,
         Container holding calculated degradation modes (LAM and LLI).
     fit_table : DqdvFitTable
         Container holding results from corresponding dQdV fits. Used to get
-        full cell capacity, and access to optional ``extra_cols``.
+        full cell capacity, and access to optional `extra_cols`.
     x_col : str | None, optional
         A column name from 'fit_table` to use for the x-axis. If None (default)
         then the row indices are used.
@@ -140,8 +141,8 @@ def plot_lam_lli(deg_table: DegModeTable, fit_table: DqdvFitTable,
     See Also
     --------
     ~ampworks.dqdv.DqdvFitter : Access to the fitting routines.
-    ~ampworks.dqdv.DqdvFitTable : Required container to store multiple fits.
     ~ampworks.dqdv.DegModeTable : Table of calculated degradation modes.
+    ~ampworks.dqdv.DqdvFitTable : Required container to store multiple fits.
     ~ampworks.dqdv.calc_lam_lli : Calculate degradation modes before plottting.
 
     """

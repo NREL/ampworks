@@ -2,7 +2,7 @@
 
 Examples
 ========
-Examples below demonstrate different use cases for ``ampworks``. These examples highlight the flexibility and ease of use of the package. Each example includes both descriptions and code snippets to help you get started with implementing your own models efficiently.
+Examples below demonstrate different use cases for `ampworks`. These examples highlight the flexibility and ease of use of the package. Each example includes both descriptions and code snippets to help you get started with implementing your own models efficiently.
 
 .. grid:: 1 2 2 2
 

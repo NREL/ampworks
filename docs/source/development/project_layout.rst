@@ -1,6 +1,6 @@
 Project Layout
 ==============
-The ``ampworks`` project is organized to provide clarity and structure, making it easy for developers to navigate and contribute. Below is an outline of the key directories and files, along with guidelines for working within them.
+The `ampworks` project is organized to provide clarity and structure, making it easy for developers to navigate and contribute. Below is an outline of the key directories and files, along with guidelines for working within them.
 
 Root Directory
 --------------
@@ -14,14 +14,14 @@ The root directory contains the most important files and folders necessary for d
 
 Source Directory
 ----------------
-The ``src/`` directory contains the main package code. Using this structure ensures that local imports during development come from the installed package rather than accidental imports from the source files themselves.
+The `src/` directory contains the main package code. Using this structure ensures that local imports during development come from the installed package rather than accidental imports from the source files themselves.
 
 Top-level Package
 ^^^^^^^^^^^^^^^^^
-The core sub-modules/subpackages of the ``ampworks`` package reside at the top level of the ``src/`` directory and include:
+The core sub-modules/subpackages of the `ampworks` package reside at the top level of the `src/` directory and include:
 
-* ``dqdv``: Methods to help with differential analysis. For example, extract aging parameters through an incremental capacity analysis.
-* ``gitt``: Analysis tools for galvanostatic intermittent titration test data. Extracts kinetic and transport properties for numerical models.
+* `dqdv`: Methods to help with differential analysis. For example, extract aging parameters through an incremental capacity analysis.
+* `gitt`: Analysis tools for galvanostatic intermittent titration test data. Extracts kinetic and transport properties for numerical models.
 
 Each of these classes typically resides in its own file, following a philosophy of keeping files manageable in size. If multiple classes or functions share significant overlap in purpose, they may be grouped in the same file, but care is taken to keep files concise and easy to navigate.
 
@@ -29,5 +29,5 @@ Subpackages
 ^^^^^^^^^^^
 There are two subpackages that handle specific functionality:
 
-* ``plotutils/``: Contains utilities for visualizing simulation results. Any helper functions for plotting or figure generation live here to keep the core logic separate from visualization tasks.
-* ``loadfns/``: Contains functions to assist users in building dynamic load profiles. These functions are especially useful for users looking to simulate different load scenarios in their models.
+* `plotutils/`: Contains utilities for visualizing simulation results. Any helper functions for plotting or figure generation live here to keep the core logic separate from visualization tasks.
+* `loadfns/`: Contains functions to assist users in building dynamic load profiles. These functions are especially useful for users looking to simulate different load scenarios in their models.
