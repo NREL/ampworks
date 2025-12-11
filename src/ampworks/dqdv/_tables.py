@@ -10,7 +10,7 @@ class DqdvFitResult(RichResult):
 
     def __init__(self, **kwargs) -> None:
         """
-        Container for fits from the ``DqdvFitter``. An instance of this class
+        Container for fits from the `DqdvFitter`. An instance of this class
         is returned from both the grid search and constrained fit methods.
 
         ========= ========= ==============================================
@@ -41,14 +41,14 @@ class DqdvFitTable(RichTable):
     def __init__(self, extra_cols: list[str] | None = None) -> None:
         """
         A container to store multiple dQdV fits. An instance of this class is
-        required to run ``calc_lam_lli``. Loop over multiple datasets and append
-        fits one at a time to the table using the ``append`` method.
+        required to run `calc_lam_lli`. Loop over multiple datasets and append
+        fits one at a time to the table using the `append` method.
 
         Parameters
         ----------
         extra_cols : list[str] or None, optional
             Any extra, non-required columns to add to the table. Pass the column
-            names and their row values to ``append`` when writing each row. Use
+            names and their row values to `append` when writing each row. Use
             to track equivalent full cycles or other metrics with each fit.
 
         Raises
@@ -77,7 +77,7 @@ class DqdvFitTable(RichTable):
         Parameters
         ----------
         fit_result : DqdvFitResult
-            A result from the ``DqdvFitter's`` grid search or constrained fit.
+            A result from the `DqdvFitter's` grid search or constrained fit.
         extra_cols : dict, optional
             Any extra column names/values to include in the row.
 
@@ -86,6 +86,10 @@ class DqdvFitTable(RichTable):
         ValueError
             Columns cannot be created on the fly. Any extra columns must be
             defined at initialization.
+
+        See Also
+        --------
+        ~ampworks.dqdv.DqdvFitResult : Container for a single dQdV fit.
 
         """
         row = {
@@ -124,13 +128,17 @@ class DegModeTable(RichTable):
 
     def __init__(self, df: pd.DataFrame) -> None:
         """
-        An output container for ``calc_lam_lli``. Stores electrode capacities,
+        An output container for `calc_lam_lli`. Stores electrode capacities,
         loss of active material (LAM), and loss of lithium inventory (LLI).
 
         Parameters
         ----------
         df : pd.DataFrame
             The input dataframe to store.
+
+        See Also
+        --------
+        ~ampworks.dqdv.calc_lam_lli : Calculate degradation modes from fits.
 
         """
         super().__init__(df)

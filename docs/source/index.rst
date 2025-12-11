@@ -1,9 +1,9 @@
 =======
 Summary
 =======
-``ampworks`` is a collection of tools designed to visualize and process experimental battery data. It provides routines for degradation mode analysis, parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more. These routines provide key properties for life and physics-based models (e.g., SPM and P2D). Graphical user interfaces (GUIs) are available for some of the analyses. See a full list of the GUI-based applications by running ``ampworks -h`` in your terminal after installation. 
+`ampworks` is a collection of tools designed to visualize and process experimental battery data. It provides routines for degradation mode analysis, parameter extraction from common protocols (e.g., GITT, ICI, etc.), and more. These routines provide key properties for life and physics-based models (e.g., SPM and P2D). Graphical user interfaces (GUIs) are available for some of the analyses. See a full list of the GUI-based applications by running `ampworks -h` in your terminal after installation. 
 
-Note: ``ampworks`` is in early development. The API may change as it matures.
+Note: `ampworks` is in early development. The API may change as it matures.
 
 .. toctree:: 
    :caption: User Guide

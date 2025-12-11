@@ -27,7 +27,7 @@ class Timer:
 
         Examples
         --------
-        The ``Timer`` works as a context manager and is accessed using ``with``
+        The `Timer` works as a context manager and is accessed using `with`
         blocks. For example:
 
         .. code-block:: python

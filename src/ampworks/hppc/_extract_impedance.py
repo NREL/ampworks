@@ -296,7 +296,7 @@ def extract_impedance(
     ----------
     data : Dataset
         The sliced HPPC data to process. Must have, at a minimum, the columns
-        for ``{'Seconds', 'Volts', 'Amps'}``. See notes for more information.
+        for `{'Seconds', 'Volts', 'Amps'}`. See notes for more information.
     tmin : float, optional
         Minimum pulse duration in seconds, by default 0.
     tmax : float, optional
@@ -304,11 +304,11 @@ def extract_impedance(
     sample_times : list[float] or None, optional
         Relative times to sample each pulse's impedance, in seconds. If None
         (default), only "instantaneous" and end of pulse impedance are reported.
-        ``NaN`` is used for sample times that cannot be interpolated.
+        `NaN` is used for sample times that cannot be interpolated.
     steps : list[int] or None, optional
         Explicit list of step numbers associated with HPPC pulses. If None,
-        pulses are autodetected based on state transitions. Requires a ``Step``
-        column in ``data``. Defaults to None.
+        pulses are autodetected based on state transitions. Requires a `Step`
+        column in `data`. Defaults to None.
     area : float, optional
         Electrode or cell area in cm2. Used to calculate area specific impedance
         (ASI) in Ohms-cm2. If None (default), ASI values are not reported.
@@ -339,7 +339,7 @@ def extract_impedance(
     Rests within the dataset are expected to have a current exactly equal to
     zero. The autodetection routine for pulses relies on this to identify pulse
     start and end times. If you need to zero out currents below a threshold, you
-    can use ``data.zero_below('Amps', threshold)`` before calling this function.
+    can use `data.zero_below('Amps', threshold)` before calling this function.
     Furthermore, even when using explicit 'steps', the algorithm checks for rest
     periods before and after each pulse. If these are not present, the pulse is
     ignored.

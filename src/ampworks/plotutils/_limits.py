@@ -24,7 +24,7 @@ def focused_limits(
         Input data values.
     factor : float, optional
         Multiplier for the IQR. Defaults to 2.5. Any values outside the range
-        ``[Q1 - factor*IQR, Q3 + factor*IQR]`` are considered outliers.
+        `[Q1 - factor*IQR, Q3 + factor*IQR]` are considered outliers.
     margin : float, optional
         Fractional padding to add to the final limits, relative to the data
         range after clipping. Default is 0.05 (5%).

@@ -11,9 +11,9 @@ class ProgressBar(tqdm):
                  desc: str = None, ncols: int = 80, total: int = None,
                  **kwargs) -> None:
         """
-        Wraps the progress bar from ``tqdm``, with different defaults. Also
+        Wraps the progress bar from `tqdm`, with different defaults. Also
         enables a custom "manual" mode in which the user manually sets the
-        progress as a fraction in [0, 1] using ``set_progress``.
+        progress as a fraction in [0, 1] using `set_progress`.
 
         Parameters
         ----------
@@ -32,7 +32,7 @@ class ProgressBar(tqdm):
             Number of expected iterations. Use when 'iterable' is a generator,
             otherwise ETA and the printed bar are skipped.
         **kwargs : dict, optional
-            Additional keyword arguments to pass through to ``tqdm``.
+            Additional keyword arguments to pass through to `tqdm`.
 
         Raises
         ------
@@ -83,7 +83,7 @@ class ProgressBar(tqdm):
     def format_meter(self, n: int | float, total: int | float, elapsed: float,
                      **kwargs) -> str:
         """
-        Wraps the parent ``format_meter`` method to customize stats for the
+        Wraps the parent `format_meter` method to customize stats for the
         "manual" mode. Users should not need to call this method directly.
 
         Parameters

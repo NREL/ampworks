@@ -42,7 +42,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     ----------
     data : Dataset
         The sliced GITT data to process. Must have, at a minimum, columns for
-        ``{'Seconds', 'Amps', 'Volts'}``. See notes for more information.
+        `{'Seconds', 'Amps', 'Volts'}`. See notes for more information.
     radius : float
         The representative particle radius of your active material (in meters).
         It's common to use D50 / 2, i.e., the median radius of a distribution.
@@ -62,7 +62,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
         Table of parameters. Columns include 'SOC' (state of charge, -), 'Ds'
         (diffusivity, m2/s), and 'Eeq' (equilibrium potential, V).
     stats : pd.DataFrame
-        Only returned if ``return_all=True``. Provides additional stats about
+        Only returned if `return_all=True`. Provides additional stats about
         each pulse, including errors from the sqrt(t) vs. voltage regressions.
 
     Raises
@@ -75,7 +75,7 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     Notes
     -----
     Rests within the dataset are expected to have a current exactly equal to
-    zero. You can use ``data.zero_below('Amps', threshold)`` to manually zero
+    zero. You can use `data.zero_below('Amps', threshold)` to manually zero
     out currents below some tolerance, if needed. This should be done prior to
     passing in the dataset to this function.
 
@@ -86,13 +86,13 @@ def extract_params(data: Dataset, radius: float, tmin: float = 1,
     and discharge directions you should slice your data into two datasets and
     call this routine twice.
 
-    The algorithm assumes that ``sqrt(t)`` vs. voltage is approximately linear.
+    The algorithm assumes that `sqrt(t)` vs. voltage is approximately linear.
     Mathematically this occurs on time scales much less than the time constant
-    ``tau = R**2 / D``. Large ``tmax`` that violate ``tmax << tau`` will have
+    `tau = R**2 / D`. Large `tmax` that violate `tmax << tau` will have
     incorrect results. See the references for a more detailed discussion. Also,
-    if a pulse has fewer than two data points between the set relative ``tmin``
-    and ``tmax`` then the linear regression performed to find the diffusivity
-    and equilbrium potential will return ``NaN`` for both.
+    if a pulse has fewer than two data points between the set relative `tmin`
+    and `tmax` then the linear regression performed to find the diffusivity
+    and equilbrium potential will return `NaN` for both.
 
     References
     ----------

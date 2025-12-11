@@ -59,12 +59,12 @@ class DqdvFitter:
 
         Notes
         -----
-        * The dataframe inputs are all required. The default ``None`` values
+        * The dataframe inputs are all required. The default `None` values
           allow you to initialize the class first and add them one at a time.
           This is primarily to support interactions with the GUI.
-        * When 'voltage' is included in ``cost_terms``, an iR term is fit in
+        * When 'voltage' is included in `cost_terms`, an iR term is fit in
           addition to the x0/x1 stoichiometries. Otherwise, the ohmic iR offset
-          is forced to 0. ``cost_terms`` can be modified after initialization
+          is forced to 0. `cost_terms` can be modified after initialization
           via its property.
 
         """
@@ -335,8 +335,8 @@ class DqdvFitter:
         full cell. Values returned by all fitting routines are consistent with
         this orientation, and users can access the voltage windows of individual
         electrode potentials by passing the appropriate sections of the fitted
-        x0/x1 values. For example, use ``get_ocv(fit_result.x[0:2])`` for the
-        negative electrode and ``get_ocv(fit_result[2:4])`` for the positive
+        x0/x1 values. For example, use `get_ocv(fit_result.x[0:2])` for the
+        negative electrode and `get_ocv(fit_result[2:4])` for the positive
         electrode.
 
         """
@@ -378,7 +378,7 @@ class DqdvFitter:
         Notes
         -----
         The individual electrode datasets and splines are internally stored in
-        opposite directions of one another. See the ``get_ocv`` method for more
+        opposite directions of one another. See the `get_ocv` method for more
         information to ensure you are evaluating each in the correct directions.
 
         """
@@ -420,7 +420,7 @@ class DqdvFitter:
         Notes
         -----
         The individual electrode datasets and splines are internally stored in
-        opposite directions of one another. See the ``get_ocv`` method for more
+        opposite directions of one another. See the `get_ocv` method for more
         information to ensure you are evaluating each in the correct directions.
 
         """
@@ -434,7 +434,7 @@ class DqdvFitter:
         ----------
         params : ArrayLike, shape(n,)
             Array for xn0, xn1, xp0, xp1, and iR (optional). If you already
-            performed a fit you can simply use ``fit_result.x``.
+            performed a fit you can simply use `fit_result.x`.
 
         Returns
         -------
@@ -570,7 +570,7 @@ class DqdvFitter:
         ----------
         x0 : ArrayLike, shape(n,)
             Initial xn0, xn1, xp0, xp1, and optionally iR. If you already ran
-            a previous fit you can simply use ``fit_result.x``.
+            a previous fit you can simply use `fit_result.x`.
         bounds : float or list[float], optional
             Symmetric parameter bounds (excludes iR). A float (default=0.1)
             applies to all. Use lists for per-x values. See notes for more info.
@@ -579,7 +579,7 @@ class DqdvFitter:
         maxiter : int, optional
             Maximum number of iteraterations. Defaults to 1e5.
         return_full : bool, optional
-            If True, include the complete ``OptimizeResult`` from SciPy in the
+            If True, include the complete `OptimizeResult` from SciPy in the
             output. Defaults to False.
 
         Returns
@@ -589,24 +589,24 @@ class DqdvFitter:
             approximate standard deviation for the pameters.
         opt_result : OptimizeResult
             Full result form SciPy. Does not include standard deviation info.
-            Only returned if ``return_full=True``.
+            Only returned if `return_full=True`.
 
         Notes
         -----
         Bound indices correspond to xn0, xn1, xp0, and xp1, where 0 and 1 are
         in reference to lower and upper stoichiometries of the negative (n)
-        and positive (p) electrodes. Set ``bounds[i] = 1`` to disable bounds
-        and use the full interval [0, 1] for x[i]. If an ``x[i] +/- bounds[i]``
+        and positive (p) electrodes. Set `bounds[i] = 1` to disable bounds
+        and use the full interval [0, 1] for x[i]. If an `x[i] +/- bounds[i]`
         exceeds [0, 1], the lower and/or upper bounds will be corrected to 0
         and/or 1, respectively. Furthermore, bounds are clipped to be between
         0.001 and 1 behind the scenes. It does not help to use values outside
         this range.
 
-        The ``fit_result`` output contains uncertainty estimates for the fitted
+        The `fit_result` output contains uncertainty estimates for the fitted
         parameters. These are approximated from the numerical Hessian at the
         optimum. The method assumes the function is locally linear, the input
         errors are independent and small, and the fit is well-behaved. Notes
-        on the method are available `here <std-notes>_`_. These bounds provide
+        on the method are available `here <std-notes_>`_. These bounds provide
         more of a heuristic interpretation of the confidence intervals rather
         than a statistical interpretation. This is because all fitting routines
         use a mean absolute percent error (MAPE) function, but the uncertainty
@@ -750,7 +750,7 @@ class DqdvFitter:
         ----------
         params : ArrayLike, shape(n,)
             Array for xn0, xn1, xp0, xp1, and iR (optional). If you already
-            performed a fit you can simply use ``fit_result.x``.
+            performed a fit you can simply use `fit_result.x`.
 
         """
         from ampworks.utils import _ExitHandler

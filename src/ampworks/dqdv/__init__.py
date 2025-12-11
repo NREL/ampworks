@@ -42,7 +42,7 @@ def run_gui(jupyter_mode: str = 'external', jupyter_height: int = 650) -> None:
     experience issues if you call it from a normal script, or in an interactive
     session within some IDEs (e.g., Spyder, PyCharm, IPython, etc.). if you're
     looking for another way to access the GUI without needing to open Jupyter
-    Notebooks, you can use the ``ampworks --app`` command from your terminal.
+    Notebooks, you can use the `ampworks --app` command from your terminal.
 
     """
 
