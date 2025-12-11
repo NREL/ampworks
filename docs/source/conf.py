@@ -9,7 +9,7 @@
 import ampworks as amp
 
 project = 'ampworks'
-copyright = 'Alliance for Sustainable Energy, LLC'
+copyright = 'Alliance for Energy Innovation, LLC'
 author = 'Corey R. Randall'
 version = amp.__version__
 release = amp.__version__
