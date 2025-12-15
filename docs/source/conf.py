@@ -9,8 +9,9 @@
 import ampworks as amp
 
 project = 'ampworks'
-copyright = 'Alliance for Energy Innovation, LLC'
 author = 'Corey R. Randall'
+copyright = 'Alliance for Energy Innovation, LLC'
+
 version = amp.__version__
 release = amp.__version__
 
@@ -60,6 +61,7 @@ html_theme = 'pydata_sphinx_theme'
 html_context = {'default_mode': 'dark'}
 
 html_static_path = ['_static']
+
 html_js_files = ['custom.js']
 html_css_files = ['custom.css']
 
@@ -120,7 +122,6 @@ autoapi_keep_files = True
 autodoc_typehints = 'none'
 autoapi_member_order = 'groupwise'
 autoapi_python_class_content = 'both'
-autoapi_ignore = ['*/__pycache__/*']
 autoapi_dirs = ['../../src/ampworks']
 autoapi_options = [
     'members',

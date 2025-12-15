@@ -16,18 +16,13 @@ Source Directory
 ----------------
 The `src/` directory contains the main package code. Using this structure ensures that local imports during development come from the installed package rather than accidental imports from the source files themselves.
 
-Top-level Package
+Package Structure
 ^^^^^^^^^^^^^^^^^
-The core sub-modules/subpackages of the `ampworks` package reside at the top level of the `src/` directory and include:
+Sub-modules/subpackages of the `ampworks` package reside at the top level of the `src/` directory and include, for example:
 
+* `_core`: Core reading, writing, and container classes. In particular, most functions build of the `Dataset` class, which is a custom subclass of `pd.DataFrame`.
+* `datasets`: Functions to load, print, and download example datasets for testing and demonstration purposes.
 * `dqdv`: Methods to help with differential analysis. For example, extract aging parameters through an incremental capacity analysis.
 * `gitt`: Analysis tools for galvanostatic intermittent titration test data. Extracts kinetic and transport properties for numerical models.
 
-Each of these classes typically resides in its own file, following a philosophy of keeping files manageable in size. If multiple classes or functions share significant overlap in purpose, they may be grouped in the same file, but care is taken to keep files concise and easy to navigate.
-
-Subpackages
-^^^^^^^^^^^
-There are two subpackages that handle specific functionality:
-
-* `plotutils/`: Contains utilities for visualizing simulation results. Any helper functions for plotting or figure generation live here to keep the core logic separate from visualization tasks.
-* `loadfns/`: Contains functions to assist users in building dynamic load profiles. These functions are especially useful for users looking to simulate different load scenarios in their models.
+Note that this list is not exhaustive. Organization within each subpackage is designed such that classes typically resides in their own file, following a philosophy of keeping files manageable in size. If multiple classes or functions share significant overlap in purpose, they may be grouped in the same file, but care is taken to keep files concise and easy to navigate.

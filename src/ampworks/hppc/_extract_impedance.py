@@ -14,8 +14,6 @@ from scipy.integrate import cumulative_trapezoid
 if TYPE_CHECKING:  # pragma: no cover
     from ampworks import Dataset
 
-# TODO: Add HPPC dataset into datasets module for an example and testing.
-
 
 def _plot_pulses(data: Dataset, **fig_kw) -> None:
     """
