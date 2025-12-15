@@ -26,6 +26,7 @@
 - Complete overhaul to `plotutils` for shorter, modular use ([#2](https://github.com/NREL/ampworks/pull/2))
 
 ### Chores
+- Add project overview page to development section in documentation ([#16](https://github.com/NREL/ampworks/pull/16)) 
 - Rebrand NREL to NLR, and include name change for Alliance as well ([#15](https://github.com/NREL/ampworks/pull/15))
 
 ## [v0.0.1](https://github.com/NREL/ampworks/tree/v0.0.1)
