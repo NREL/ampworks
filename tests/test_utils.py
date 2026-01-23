@@ -165,7 +165,8 @@ def test_RichTable():
     assert repr(table) == repr(df)
 
     # access via dict-style or attr-style
-    assert np.all(table.a == table['a']) and (table.a is table['a'])
+    assert np.all(table.a == table['a'])
+    assert np.shares_memory(table.a.to_numpy(), table['a'].to_numpy())
     assert np.all(table[['a', 'b']] == df)
 
     # no direct assignment
