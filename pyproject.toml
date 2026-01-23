@@ -87,7 +87,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/NREL/ampworks"
-Documentation = "https://github.com/NREL/ampworks"
-Repository = "https://github.com/NREL/ampworks"
-Issues = "https://github.com/NREL/ampworks/issues"
+Homepage = "https://github.com/NatLabRockies/ampworks"
+Documentation = "https://github.com/NatLabRockies/ampworks"
+Repository = "https://github.com/NatLabRockies/ampworks"
+Issues = "https://github.com/NatLabRockies/ampworks/issues"

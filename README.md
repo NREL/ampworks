@@ -5,11 +5,11 @@
 ![coverage][cov-b] &nbsp;
 [![pep8][pep-b]][pep-l]
 
-[ci-b]: https://github.com/NREL/ampworks/actions/workflows/ci.yml/badge.svg
-[ci-l]: https://github.com/NREL/ampworks/actions/workflows/ci.yml
+[ci-b]: https://github.com/NatLabRockies/ampworks/actions/workflows/ci.yml/badge.svg
+[ci-l]: https://github.com/NatLabRockies/ampworks/actions/workflows/ci.yml
 
-[test-b]: https://github.com/NREL/ampworks/blob/main/images/tests.svg?raw=true
-[cov-b]: https://github.com/NREL/ampworks/blob/main/images/coverage.svg?raw=true
+[test-b]: https://github.com/NatLabRockies/ampworks/blob/main/images/tests.svg?raw=true
+[cov-b]: https://github.com/NatLabRockies/ampworks/blob/main/images/coverage.svg?raw=true
 
 [pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
 [pep-l]: https://www.python.org/dev/peps/pep-0008
@@ -41,7 +41,7 @@ The best way to get started is by exploring the `examples` folder, which include
 ## Citing this Work
 This work was authored by researchers at the National Laboratory of the Rockies (NLR). If you use use this package in your work, please include the following citation:
 
-> Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software, Mar. 2025. url: [github.com/NREL/ampworks](https://github.com/NREL/ampworks). doi: [10.11578/dc.20250313.2](https://doi.org/10.11578/dc.20250313.2).
+> Randall, Corey R. "ampworks: Battery data analysis tools in Python [SWR-25-39]." Computer software, Mar. 2025. url: [github.com/NatLabRockies/ampworks](https://github.com/NatLabRockies/ampworks). doi: [10.11578/dc.20250313.2](https://doi.org/10.11578/dc.20250313.2).
 
 For convenience, we also provide the following for your BibTex:
 
@@ -49,7 +49,7 @@ For convenience, we also provide the following for your BibTex:
 @misc{Randall-2025,
   author = {Randall, Corey R.},
   title = {{ampworks: Battery data analysis tools in Python [SWR-25-39]}},
-  url = {github.com/NREL/ampworks},
+  url = {github.com/NatLabRockies/ampworks},
   month = {Mar.},
   year = {2025},
   doi = {10.11578/dc.20250313.2},
@@ -57,7 +57,7 @@ For convenience, we also provide the following for your BibTex:
 ```
 
 ## Contributing
-If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/ampworks/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines](https://ampworks.readthedocs.io/en/latest/development).
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NatLabRockies/ampworks/issues). If the bug you've caught or the feature you'd like to add isn't already being worked on, please submit a new issue before getting started. You should also read through the [developer guidelines](https://ampworks.readthedocs.io/en/latest/development).
 
 ## Disclaimer
 This work was authored by the National Laboratory of the Rockies (NLR), operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

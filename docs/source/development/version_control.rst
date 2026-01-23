@@ -60,7 +60,7 @@ The main repository only hosts the main and release branches. Users should fork 
 
 You will likely also want to setup a remote to the upstream repository for dealing with merge conflicts and version patches, as discussed below. To set up an `upstream` remote use:: 
 
-    git remote add upstream https://github.com/NREL/ampworks.git
+    git remote add upstream https://github.com/NatLabRockies/ampworks.git
 
 Bug Fixes
 ^^^^^^^^^

@@ -71,7 +71,7 @@ html_theme_options = {
     'icon_links': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/NREL/ampworks',
+            'url': 'https://github.com/NatLabRockies/ampworks',
             'icon': 'fa-brands fa-github',
         },
         {
